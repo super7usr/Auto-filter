@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta property="og:image" content="https://i.ibb.co/M8S0Zzj/live-streaming.png" itemprop="thumbnailUrl">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>%s</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(45deg, #0d253f, #1d3557, #2b4a7a);
+            --accent-color: #ff5e00;
+            --accent-glow: 0 0 10px rgba(255, 94, 0, 0.6);
+            --player-progress: linear-gradient(90deg, #ff5e00, #ff9e00);
+            --card-bg: rgba(15, 23, 42, 0.8);
+            --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--primary-gradient);
+            background-size: 200% 200%;
+            animation: gradientBG 15s ease infinite;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px 0;
+            margin: 0;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1000px;
+            padding: 0 15px;
+        }
+
+        .player-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .player-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .video-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            color: var(--accent-color);
+            text-shadow: var(--accent-glow);
+        }
+
+        .file-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            color: #fff;
+            text-shadow: var(--text-shadow);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 80%;
+        }
+
+        .back-btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .player-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            background-color: #000;
+            margin-bottom: 20px;
+        }
+
+        .plyr {
+            --plyr-color-main: var(--accent-color);
+            --plyr-video-control-color: #fff;
+            --plyr-video-control-color-hover: var(--accent-color);
+            --plyr-video-control-background-hover: rgba(255, 255, 255, 0.1);
+            --plyr-audio-control-background-hover: rgba(255, 255, 255, 0.1);
+            --plyr-video-pip-supported-display: inline;
+            --plyr-range-fill-background: var(--player-progress);
+        }
+
+        .video-features {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            width: 120px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+            text-shadow: var(--accent-glow);
+        }
+
+        .feature-title {
+            font-size: 0.9rem;
+            margin: 0;
+            color: #fff;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .footer a:hover {
+            text-shadow: var(--accent-glow);
+        }
+
+        @media (max-width: 768px) {
+            .video-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .file-title {
+                font-size: 1.3rem;
+                max-width: 100%;
+            }
+
+            .video-features {
+                justify-content: center;
+            }
+
+            .feature-item {
+                width: 100px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="player-card">
+                    <div class="video-header">
+                        <div class="header-left">
+                            <i class="fas fa-film video-icon"></i>
+                            <h1 class="file-title">%s</h1>
+                        </div>
+                        <a href="/" class="back-btn">
+                            <i class="fas fa-arrow-left"></i> Back to Home
+                        </a>
+                    </div>
+
+                    <div class="player-container">
+                        <tag src="%s" class="player"></tag>
+                    </div>
+
+                    <div class="video-features">
+                        <div class="feature-item">
+                            <i class="fas fa-download feature-icon"></i>
+                            <p class="feature-title">Download</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-play-circle feature-icon"></i>
+                            <p class="feature-title">HD Playback</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-volume-up feature-icon"></i>
+                            <p class="feature-title">Quality Audio</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-expand feature-icon"></i>
+                            <p class="feature-title">Fullscreen</p>
+                        </div>
+                    </div>
+                    </div>
+
+                <div class="footer">
+                    <p class="mb-0">© 2025 Movie Series Bot | Powered by <a href="https://t.me/HA_Bots">HA Bots</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script>
+        const controls = [
+            'play-large',
+            'rewind',
+            'play', 
+            'fast-forward', 
+            'progress', 
+            'current-time',
+            'duration',
+            'mute',
+            'volume',
+            'captions',
+            'settings',
+            'pip',
+            'airplay',
+            'download',
+            'fullscreen'
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const player = Plyr.setup('.player', { 
+                controls,
+                tooltips: { controls: true, seek: true },
+                captions: { active: true, language: 'auto', update: true },
+                hideControls: false,
+                keyboard: { focused: true, global: true },
+                fullscreen: { enabled: true, fallback: true, iosNative: true },
+                speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3] },
+                quality: { default: 720, options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240] }
+            });
+
+            // Add loading animation
+            const playerContainer = document.querySelector('.player-container');
+            playerContainer.insertAdjacentHTML('beforeend', `
+                <div class="player-loader" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 2;">
+                    <div style="width: 50px; height: 50px; border: 3px solid transparent; border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                </div>
+            `);
+
+            // Remove loader once player is ready
+            player[0].on('ready', () => {
+                document.querySelector('.player-loader').style.display = 'none';
+            });
+
+            // Handle loading state changes
+            player[0].on('loadstart waiting', () => {
+                document.querySelector('.player-loader').style.display = 'flex';
+            });
+
+            player[0].on('canplay playing', () => {
+                document.querySelector('.player-loader').style.display = 'none';
+            });
+        });
+
+        // Add loading animation keyframes
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        `);
+    </script>
+</body>
+</html>
