@@ -1,0 +1,5 @@
+{
+  "entryPoint": "run.py",
+  "run": "python run.py",
+  "web": "python webserver_run.py"
+}
