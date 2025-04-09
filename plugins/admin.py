@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, ChatPermissions
 from pyrogram.errors import ChatAdminRequired, UserAdminInvalid, FloodWait
 import asyncio
-from config import ADMINS
+from info import ADMINS
 
 # Helper function to extract user and reason from command
 async def extract_user_and_reason(message):
