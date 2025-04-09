@@ -160,25 +160,33 @@ async def start_cmd_for_web(client, message):
         return
 
     # Check if it's a direct file link without group_id
-    if mc.startswith('file') and mc.count('_') == 1:
-        # Format: file_FILE_ID (direct file ID without group_id)
-        _, file_id = mc.split("_", 1)
-        files_ = await get_file_details(file_id)
-        if not files_:
-            return await message.reply('No Such File Exist!')
-        files = files_[0]
-        # Use default settings since we don't have a group_id
-        settings = await get_settings(1)  # Use default group ID (usually 1)
-        # Set grp_id to 1 for the callback data
-        grp_id = "1"
-    else:
-        # Original format: file_GROUP_ID_FILE_ID
-        type_, grp_id, file_id = mc.split("_", 2)
-        files_ = await get_file_details(file_id)
-        if not files_:
-            return await message.reply('No Such File Exist!')
-        files = files_[0]
-        settings = await get_settings(int(grp_id))
+    if mc.startswith('file'):
+        parts = mc.split("_")
+        if len(parts) == 2:
+            # Format: file_FILE_ID
+            _, file_id = parts
+            files_ = await get_file_details(file_id)
+            if not files_:
+                return await message.reply('No Such File Exist!')
+            files = files_[0]
+            # Use default settings since we don't have a group_id
+            settings = await get_settings(1)  # Use default group ID (usually 1)
+            # Set grp_id to 1 for the callback data
+            grp_id = "1"
+        elif len(parts) == 3:
+            # Original format: file_GROUP_ID_FILE_ID
+            _, grp_id, file_id = parts
+           files_ = await get_file_details(file_id)
+           if not files_:
+               return await message.reply('No Such File Exist!')
+           files = files_[0]
+           settings = await get_settings(int(grp_id))
+        else:
+           return await message.reply('Invalid file link format!')
+   else:
+    # Handle other start parameters if any
+       pass
+    
     if type_ != 'shortlink' and settings['shortlink']:
         link = await get_shortlink(settings['url'], settings['api'], f"https://t.me/{temp.U_NAME}?start=shortlink_{grp_id}_{file_id}")
         btn = [[
