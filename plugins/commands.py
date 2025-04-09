@@ -175,8 +175,6 @@ async def start_cmd_for_web(client, message):
             # Original format: file_GROUP_ID_FILE_ID
             _, grp_id, file_id = parts
            files_ = await get_file_details(file_id)
-           if not files_:
-               return await message.reply('No Such File Exist!')
            files = files_[0]
            settings = await get_settings(int(grp_id))
         else:
