@@ -1,6 +1,9 @@
 import motor.motor_asyncio
 import datetime
-from config import LOGGER, COLLECTION_NAME
+from info import COLLECTION_NAME
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 class Database:
     def __init__(self, uri, database_name):
