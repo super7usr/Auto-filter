@@ -177,7 +177,7 @@ async def start_cmd_for_web(client, message):
             files_ = await get_file_details(file_id)
             files = files_[0]
             settings = await get_settings(int(grp_id))
-         else:
+        else:
             return await message.reply('Invalid file link format!')
     else:
     # Handle other start parameters if any
