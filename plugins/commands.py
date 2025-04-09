@@ -22,10 +22,10 @@ async def start_cmdy(client, message):
             await db.add_chat(message.chat.id, message.chat.title)
         user = message.from_user.mention if message.from_user else "Dear"
         btn = [[
-            InlineKeyboardButton('⚡️ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ ⚡️', url=UPDATES_LINK),
-            InlineKeyboardButton('💡 sᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ 💡', url=SUPPORT_LINK)
+            InlineKeyboardButton('⚡️ Updates Channel ⚡️', url=UPDATES_LINK),
+            InlineKeyboardButton('💡 Support Group 💡', url=SUPPORT_LINK)
         ]]
-        await message.reply(text=f"<b>ʜᴇʏ {user},\nʜᴏᴡ ᴄᴀɴ ɪ ʜᴇʟᴘ ʏᴏᴜ??</b>", reply_markup=InlineKeyboardMarkup(btn))
+        await message.reply(text=f"<b>Hey {user},\nHow can I help you??</b>", reply_markup=InlineKeyboardMarkup(btn))
         return 
         
     if not await db.is_user_exist(message.from_user.id):
@@ -39,16 +39,16 @@ async def start_cmdy(client, message):
 
     if (len(message.command) != 2) or (len(message.command) == 2 and message.command[1] == 'start'):
         buttons = [[
-            InlineKeyboardButton("+ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ +", url=f'http://t.me/{temp.U_NAME}?startgroup=start')
+            InlineKeyboardButton("+ Add me to your Group +", url=f'http://t.me/{temp.U_NAME}?startgroup=start')
         ],[
-            InlineKeyboardButton('ℹ️ ᴜᴘᴅᴀᴛᴇs', url=UPDATES_LINK),
-            InlineKeyboardButton('🧑‍💻 sᴜᴘᴘᴏʀᴛ', url=SUPPORT_LINK)
+            InlineKeyboardButton('ℹ️ Updates', url=UPDATES_LINK),
+            InlineKeyboardButton('🧑‍💻 Support', url=SUPPORT_LINK)
         ],[
-            InlineKeyboardButton('👨‍🚒 ʜᴇʟᴘ', callback_data='help'),
-            InlineKeyboardButton('🔎 sᴇᴀʀᴄʜ ɪɴʟɪɴᴇ', switch_inline_query_current_chat=''),
-            InlineKeyboardButton('📚 ᴀʙᴏᴜᴛ', callback_data='about')
+            InlineKeyboardButton('👨‍🚒 Help', callback_data='help'),
+            InlineKeyboardButton('🔎 Search Inline', switch_inline_query_current_chat=''),
+            InlineKeyboardButton('📚 About', callback_data='about')
         ],[
-            InlineKeyboardButton('💰 ᴇᴀʀɴ ᴜɴʟɪᴍɪᴛᴇᴅ ᴍᴏɴᴇʏ ʙʏ ʙᴏᴛ 💰', callback_data='earn')
+            InlineKeyboardButton('💰 Earn Unlimited Money by Bot 💰', callback_data='earn')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         await message.reply_photo(
@@ -124,19 +124,19 @@ async def start_cmdy(client, message):
             )      
             if settings.get('is_stream', IS_STREAM):
                 btn = [[
-                    InlineKeyboardButton("✛ ᴡᴀᴛᴄʜ & ᴅᴏᴡɴʟᴏᴀᴅ ✛", callback_data=f"stream#{file.file_id}")
+                    InlineKeyboardButton("✛ watch & download ✛", callback_data=f"stream#{file.file_id}")
                 ],[
-                    InlineKeyboardButton('⚡️ ᴜᴘᴅᴀᴛᴇs', url=UPDATES_LINK),
-                    InlineKeyboardButton('💡 ꜱᴜᴘᴘᴏʀᴛ', url=SUPPORT_LINK)
+                    InlineKeyboardButton('⚡️ Updates', url=UPDATES_LINK),
+                    InlineKeyboardButton('💡 Support', url=SUPPORT_LINK)
                 ],[
-                    InlineKeyboardButton('⁉️ ᴄʟᴏsᴇ ⁉️', callback_data='close_data')
+                    InlineKeyboardButton('⁉️ close ⁉️', callback_data='close_data')
                 ]]
             else:
                 btn = [[
-                    InlineKeyboardButton('⚡️ ᴜᴘᴅᴀᴛᴇs', url=UPDATES_LINK),
-                    InlineKeyboardButton('💡 ꜱᴜᴘᴘᴏʀᴛ', url=SUPPORT_LINK)
+                    InlineKeyboardButton('⚡️ Updates', url=UPDATES_LINK),
+                    InlineKeyboardButton('💡 Support', url=SUPPORT_LINK)
                 ],[
-                    InlineKeyboardButton('⁉️ ᴄʟᴏsᴇ ⁉️', callback_data='close_data')
+                    InlineKeyboardButton('⁉️ close ⁉️', callback_data='close_data')
                 ]]
 
             msg = await client.send_cached_media(
@@ -149,28 +149,42 @@ async def start_cmdy(client, message):
             file_ids.append(msg.id)
 
         time = get_readable_time(PM_FILE_DELETE_TIME)
-        vp = await message.reply(f"Nᴏᴛᴇ: Tʜɪs ғɪʟᴇs ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇ ɪɴ {time} ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛs. Sᴀᴠᴇ ᴛʜᴇ ғɪʟᴇs ᴛᴏ sᴏᴍᴇᴡʜᴇʀᴇ ᴇʟsᴇ")
+        vp = await message.reply(f"Note: This Files will be delete in {time} to avoid copyrights. Save the Files to somewhere else")
         await asyncio.sleep(PM_FILE_DELETE_TIME)
-        buttons = [[InlineKeyboardButton('ɢᴇᴛ ғɪʟᴇs ᴀɢᴀɪɴ', callback_data=f"get_del_send_all_files#{grp_id}#{key}")]] 
+        buttons = [[InlineKeyboardButton('get Files again', callback_data=f"get_del_send_all_files#{grp_id}#{key}")]] 
         await client.delete_messages(
             chat_id=message.chat.id,
             message_ids=file_ids + [total_files.id]
         )
-        await vp.edit("Tʜᴇ ғɪʟᴇ ʜᴀs ʙᴇᴇɴ ɢᴏɴᴇ ! Cʟɪᴄᴋ ɢɪᴠᴇɴ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ.", reply_markup=InlineKeyboardMarkup(buttons))
+        await vp.edit("The File has been gone ! Click given button to get it again.", reply_markup=InlineKeyboardMarkup(buttons))
         return
 
-    type_, grp_id, file_id = mc.split("_", 2)
-    files_ = await get_file_details(file_id)
-    if not files_:
-        return await message.reply('No Such File Exist!')
-    files = files_[0]
-    settings = await get_settings(int(grp_id))
+    # Check if it's a direct file link without group_id
+    if mc.startswith('file') and mc.count('_') == 1:
+        # Format: file_FILE_ID (direct file ID without group_id)
+        _, file_id = mc.split("_", 1)
+        files_ = await get_file_details(file_id)
+        if not files_:
+            return await message.reply('No Such File Exist!')
+        files = files_[0]
+        # Use default settings since we don't have a group_id
+        settings = await get_settings(1)  # Use default group ID (usually 1)
+        # Set grp_id to 1 for the callback data
+        grp_id = "1"
+    else:
+        # Original format: file_GROUP_ID_FILE_ID
+        type_, grp_id, file_id = mc.split("_", 2)
+        files_ = await get_file_details(file_id)
+        if not files_:
+            return await message.reply('No Such File Exist!')
+        files = files_[0]
+        settings = await get_settings(int(grp_id))
     if type_ != 'shortlink' and settings['shortlink']:
         link = await get_shortlink(settings['url'], settings['api'], f"https://t.me/{temp.U_NAME}?start=shortlink_{grp_id}_{file_id}")
         btn = [[
             InlineKeyboardButton("♻️ Get File ♻️", url=link)
         ],[
-            InlineKeyboardButton("📍 ʜᴏᴡ ᴛᴏ ᴏᴘᴇɴ ʟɪɴᴋ 📍", url=settings['tutorial'])
+            InlineKeyboardButton("📍 how to open link 📍", url=settings['tutorial'])
         ]]
         await message.reply(f"[{get_size(files.file_size)}] {files.file_name}\n\nYour file is ready, Please get using this link. 👍", reply_markup=InlineKeyboardMarkup(btn), protect_content=True)
         return
@@ -183,19 +197,19 @@ async def start_cmdy(client, message):
     )
     if settings.get('is_stream', IS_STREAM):
         btn = [[
-            InlineKeyboardButton("✛ ᴡᴀᴛᴄʜ & ᴅᴏᴡɴʟᴏᴀᴅ ✛", callback_data=f"stream#{file_id}")
+            InlineKeyboardButton("✛ watch & download ✛", callback_data=f"stream#{file_id}")
         ],[
-            InlineKeyboardButton('⚡️ ᴜᴘᴅᴀᴛᴇs', url=UPDATES_LINK),
-            InlineKeyboardButton('💡 ꜱᴜᴘᴘᴏʀᴛ', url=SUPPORT_LINK)
+            InlineKeyboardButton('⚡️ Updates', url=UPDATES_LINK),
+            InlineKeyboardButton('💡 Support', url=SUPPORT_LINK)
         ],[
-            InlineKeyboardButton('⁉️ ᴄʟᴏsᴇ ⁉️', callback_data='close_data')
+            InlineKeyboardButton('⁉️ close ⁉️', callback_data='close_data')
         ]]
     else:
         btn = [[
-            InlineKeyboardButton('⚡️ ᴜᴘᴅᴀᴛᴇs', url=UPDATES_LINK),
-            InlineKeyboardButton('💡 ꜱᴜᴘᴘᴏʀᴛ', url=SUPPORT_LINK)
+            InlineKeyboardButton('⚡️ Updates', url=UPDATES_LINK),
+            InlineKeyboardButton('💡 Support', url=SUPPORT_LINK)
         ],[
-            InlineKeyboardButton('⁉️ ᴄʟᴏsᴇ ⁉️', callback_data='close_data')
+            InlineKeyboardButton('⁉️ close ⁉️', callback_data='close_data')
         ]]
     vp = await client.send_cached_media(
         chat_id=message.from_user.id,
@@ -205,14 +219,14 @@ async def start_cmdy(client, message):
         reply_markup=InlineKeyboardMarkup(btn)
     )
     time = get_readable_time(PM_FILE_DELETE_TIME)
-    msg = await vp.reply(f"Nᴏᴛᴇ: Tʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇ ɪɴ {time} ᴛᴏ ᴀᴠᴏɪᴅ ᴄᴏᴘʏʀɪɢʜᴛs. Sᴀᴠᴇ ᴛʜᴇ ғɪʟᴇ ᴛᴏ sᴏᴍᴇᴡʜᴇʀᴇ ᴇʟsᴇ")
+    msg = await vp.reply(f"Note: This message will be delete in {time} to avoid copyrights. Save the File to somewhere else")
     await asyncio.sleep(PM_FILE_DELETE_TIME)
     btns = [[
-        InlineKeyboardButton('ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ', callback_data=f"get_del_file#{grp_id}#{file_id}")
+        InlineKeyboardButton('get File again', callback_data=f"get_del_file#{grp_id}#{file_id}")
     ]]
     await msg.delete()
     await vp.delete()
-    await vp.reply("Tʜᴇ ғɪʟᴇ ʜᴀs ʙᴇᴇɴ ɢᴏɴᴇ ! Cʟɪᴄᴋ ɢɪᴠᴇɴ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ.", reply_markup=InlineKeyboardMarkup(btns))
+    await vp.reply("The File has been gone ! Click given button to get it again.", reply_markup=InlineKeyboardMarkup(btns))
 
 @Client.on_message(filters.command('index_channels'))
 async def channels_info(bot, message):
@@ -524,7 +538,7 @@ async def remove_fsub(client, message):
     if not await is_check_admin(client, grp_id, user_id):
         return await message.reply_text('You not admin in this group.')
     if not settings['fsub']:
-        await message.reply_text("ʏᴏᴜ ᴅɪᴅɴ'ᴛ ᴀᴅᴅᴇᴅ ᴀɴʏ ꜰᴏʀᴄᴇ sᴜʙsᴄʀɪʙᴇ ᴄʜᴀɴɴᴇʟ...") # query.answer not work in command so I can change to message.reply_text
+        await message.reply_text("you didn't added any force subscribe channel...") # query.answer not work in command so I can change to message.reply_text
         return
     await save_group_settings(grp_id, 'fsub', FORCE_SUB_CHANNELS)
     await message.reply_text("<b>Successfully removed your force channel id...</b>")
