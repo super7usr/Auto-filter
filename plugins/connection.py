@@ -1,7 +1,7 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import ChatAdminRequired, UserNotParticipant, ChatWriteForbidden
-from config import ADMINS
+from info import ADMINS
 
 @Client.on_message(filters.command("connect") & filters.private)
 async def connect_command(client, message):
