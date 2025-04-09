@@ -13,7 +13,7 @@ from info import SECOND_DATABASE_URL, TIME_ZONE, FORCE_SUB_CHANNELS, STICKERS, I
 from utils import get_settings, get_size, is_subscribed, is_check_admin, get_shortlink, get_verify_status, update_verify_status, save_group_settings, temp, get_readable_time, get_wish, get_seconds
 
 @Client.on_message(filters.command("start") & filters.incoming)
-async def start_cmdy(client, message):
+async def start_cmd_for_web(client, message):
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         if not await db.get_chat(message.chat.id):
             total = await client.get_chat_members_count(message.chat.id)
