@@ -5,9 +5,10 @@ from typing import List, Dict, Any
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.errors import FloodWait, UserIsBlocked, MessageNotModified
-from info import MAX_BUTTONS, BUTTON_ROW_COUNT, ADMINS
+from info import MAX_BUTTONS, ADMINS
 import logging
 
+BUTTON_ROW_COUNT = 0
 LOGGER = logging.getLogger(__name__)
 
 @Client.on_message(filters.text & filters.group)
