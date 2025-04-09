@@ -293,3 +293,49 @@ def unpack_new_file_id(new_file_id):
         )
     )
     return file_id
+
+async def get_mood_results(primary_keyword, additional_keywords=None, offset=0, max_results=MAX_BTN):
+    """
+    Search for content based on mood keywords
+    
+    Args:
+        primary_keyword: The main mood keyword to search for
+        additional_keywords: Additional mood keywords to enhance the search
+        offset: The offset for pagination
+        max_results: Maximum number of results to return
+        
+    Returns:
+        Tuple of (files, next_offset, total_results)
+    """
+    if additional_keywords is None:
+        additional_keywords = []
+    
+    # Get base results using primary keyword
+    files, next_offset, total_results = await get_search_results(primary_keyword, offset, max_results)
+    
+    # If we have additional keywords, filter the results
+    if additional_keywords and files:
+        # Create a combined pattern of all additional keywords
+        pattern = '|'.join(additional_keywords)
+        try:
+            regex = re.compile(pattern, flags=re.IGNORECASE)
+            
+            # Filter files that match any additional keyword
+            enhanced_files = []
+            for file in files:
+                if regex.search(file.file_name.lower()) or (hasattr(file, 'caption') and file.caption and regex.search(file.caption.lower())):
+                    enhanced_files.append(file)
+            
+            if enhanced_files:
+                # We found files matching additional keywords, use these
+                total_enhanced = len(enhanced_files)
+                next_offset = offset + max_results
+                if next_offset >= total_enhanced:
+                    next_offset = ''
+                return enhanced_files, next_offset, total_enhanced
+        except:
+            # If regex fails, continue with original results
+            pass
+    
+    # Return original results if no additional filtering or if filtering didn't work
+    return files, next_offset, total_results

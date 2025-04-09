@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, Text, ForeignKey, DateTime, func
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, Text, ForeignKey, DateTime, func, or_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -422,6 +422,49 @@ class SqlAdapter:
             files = session.query(Media).filter(Media.file_name.ilike(search_pattern)).all()
             
             return [media.to_dict() for media in files]
+    
+    def get_mood_results(self, primary_keyword, additional_keywords=None, max_results=10, offset=0):
+        """
+        Get search results based on mood keywords
+        
+        Args:
+            primary_keyword: The main mood keyword to search for
+            additional_keywords: List of additional keywords to filter by
+            max_results: Maximum number of results to return
+            offset: Offset for pagination
+            
+        Returns:
+            List of matching media files
+        """
+        if additional_keywords is None:
+            additional_keywords = []
+            
+        with self.Session() as session:
+            # Base query with primary keyword
+            base_query = session.query(Media).filter(
+                Media.file_name.ilike(f"%{primary_keyword}%") |
+                func.coalesce(Media.caption, "").ilike(f"%{primary_keyword}%")
+            )
+            
+            # If we have additional keywords, filter further
+            if additional_keywords:
+                # Build OR condition for each additional keyword
+                additional_filters = []
+                for keyword in additional_keywords:
+                    additional_filters.append(
+                        Media.file_name.ilike(f"%{keyword}%") | 
+                        func.coalesce(Media.caption, "").ilike(f"%{keyword}%")
+                    )
+                
+                if additional_filters:
+                    # Add any of the additional filters
+                    from sqlalchemy import or_
+                    combined_filter = or_(*additional_filters)
+                    base_query = base_query.filter(combined_filter)
+            
+            # Apply pagination
+            results = base_query.offset(offset).limit(max_results).all()
+            return [media.to_dict() for media in results]
 
 # Initialize the adapter
 db_adapter = SqlAdapter()
