@@ -174,14 +174,14 @@ async def start_cmd_for_web(client, message):
         elif len(parts) == 3:
             # Original format: file_GROUP_ID_FILE_ID
             _, grp_id, file_id = parts
-           files_ = await get_file_details(file_id)
-           files = files_[0]
-           settings = await get_settings(int(grp_id))
-        else:
-           return await message.reply('Invalid file link format!')
-   else:
+            files_ = await get_file_details(file_id)
+            files = files_[0]
+            settings = await get_settings(int(grp_id))
+         else:
+            return await message.reply('Invalid file link format!')
+    else:
     # Handle other start parameters if any
-       pass
+        pass
     
     if type_ != 'shortlink' and settings['shortlink']:
         link = await get_shortlink(settings['url'], settings['api'], f"https://t.me/{temp.U_NAME}?start=shortlink_{grp_id}_{file_id}")
