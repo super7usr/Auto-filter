@@ -28,6 +28,7 @@ class temp(object):
     GROUPS_CANCEL = False
     BOT = None
     PREMIUM = {}
+    SMART_PREVIEWS = {}
 
 async def is_subscribed(bot, query, channel):
     btn = []

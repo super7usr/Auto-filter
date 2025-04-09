@@ -61,24 +61,39 @@ if len(FORCE_SUB_CHANNELS) == 0:
     print('Info - FORCE_SUB_CHANNELS is empty')
     
 # support group
-SUPPORT_GROUP = environ.get('SUPPORT_GROUP', '')
+SUPPORT_GROUP = environ.get('SUPPORT_GROUP', '0')
 if len(SUPPORT_GROUP) == 0:
-    print('Error - SUPPORT_GROUP is missing, exiting now')
-    exit()
+    print('Info - SUPPORT_GROUP is not set, using default')
+    SUPPORT_GROUP = 0
 else:
-    SUPPORT_GROUP = int(SUPPORT_GROUP)
+    try:
+        SUPPORT_GROUP = int(SUPPORT_GROUP)
+    except ValueError:
+        print('Warning - Invalid SUPPORT_GROUP value, using default')
+        SUPPORT_GROUP = 0
 
-# MongoDB information
-DATABASE_URL = environ.get('DATABASE_URI', environ.get('DATABASE_URL', "mongodb+srv://Tast:1renish2@cluster0.arg2mrv.mongodb.net/cluster0?retryWrites=true&w=majority"))
-# Ensure the URL starts with 'mongodb://' or 'mongodb+srv://'
-if not DATABASE_URL.startswith(('mongodb://', 'mongodb+srv://')):
-    print(f'Error - DATABASE_URL is not a valid MongoDB URI: {DATABASE_URL}')
-    exit()
+# Database information
+DATABASE_URL = environ.get('DATABASE_URI', environ.get('DATABASE_URL', ""))
 if len(DATABASE_URL) == 0:
     print('Error - DATABASE_URL is missing, exiting now')
     exit()
+
 # Set DATABASE_URI for backwards compatibility
 environ['DATABASE_URI'] = DATABASE_URL
+
+# Determine which database to use
+USE_POSTGRES = False
+if DATABASE_URL.startswith(('postgres://', 'postgresql://')):
+    print('Info - Using PostgreSQL database')
+    USE_POSTGRES = True
+elif DATABASE_URL.startswith(('mongodb://', 'mongodb+srv://')):
+    print('Info - Using MongoDB database')
+    USE_POSTGRES = False
+else:
+    print(f'Warning - Could not determine database type from URL: {DATABASE_URL}')
+    print('Info - Defaulting to MongoDB')
+    USE_POSTGRES = False
+
 SECOND_DATABASE_URL = environ.get('SECOND_DATABASE_URL', "")
 if len(SECOND_DATABASE_URL) == 0:
     print('Info - SECOND_DATABASE_URL is empty')

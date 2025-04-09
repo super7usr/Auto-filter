@@ -18,14 +18,22 @@ from typing import Union, Optional, AsyncGenerator
 
 # local imports
 from web import web_app
-from info import LOG_CHANNEL, API_ID, API_HASH, BOT_TOKEN, PORT, BIN_CHANNEL, ADMINS, SECOND_DATABASE_URL, DATABASE_URL
+from info import LOG_CHANNEL, API_ID, API_HASH, BOT_TOKEN, PORT, BIN_CHANNEL, ADMINS, SECOND_DATABASE_URL, DATABASE_URL, USE_POSTGRES
 from utils import temp, get_readable_time
 
-# pymongo and database imports
-from database.users_chats_db import db
-from database.ia_filterdb import Media
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
+# Import database modules
+if USE_POSTGRES:
+    # Use PostgreSQL adapter
+    print("Using PostgreSQL database adapter")
+    import database.pg_database as db
+    from database.pg_database import Media
+else:
+    # Use MongoDB adapter
+    print("Using MongoDB database adapter")
+    from database.users_chats_db import db
+    from database.ia_filterdb import Media
+    from pymongo.mongo_client import MongoClient
+    from pymongo.server_api import ServerApi
 
 uvloop.install()
 
@@ -63,7 +71,7 @@ class Bot(Client):
         temp.BANNED_CHATS = b_chats
 
         # Database connection test
-        if DATABASE_URL and DATABASE_URL.startswith('mongodb'):
+        if not USE_POSTGRES and DATABASE_URL and DATABASE_URL.startswith('mongodb'):
             # For MongoDB
             client = MongoClient(DATABASE_URL, server_api=ServerApi('1'))
             try:
@@ -81,9 +89,12 @@ class Bot(Client):
                 except:
                     print("Error - Make sure SECOND_DATABASE_URL is correct, exiting now")
                     exit()
-        else:
-            # For PostgreSQL - connection is already tested in sql_adapter.py
+        elif USE_POSTGRES:
+            # For PostgreSQL - connection is already tested in pg_database.py
             print("Info - Using PostgreSQL database")
+        else:
+            print("Error - No valid database connection. Exiting.")
+            exit()
 
         if os.path.exists('restart.txt'):
             with open("restart.txt") as file:
