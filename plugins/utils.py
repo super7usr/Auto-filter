@@ -7,7 +7,10 @@ from typing import Dict, List
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.errors import MessageNotModified, FloodWait
-from config import ADMINS, LOGGER
+from info import ADMINS
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 # Helper functions
 def get_readable_time(seconds: int) -> str:
