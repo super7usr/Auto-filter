@@ -1,347 +1,238 @@
-from pyrogram.errors import UserNotParticipant, FloodWait
-from info import LONG_IMDB_DESCRIPTION, TIME_ZONE
-from imdb import Cinemagoer
-import asyncio
-from pyrogram.types import InlineKeyboardButton
-from pyrogram import enums
-import pytz
 import re
-from datetime import datetime
-from database.users_chats_db import db
-from shortzy import Shortzy
-import requests
+import time
+import logging
+import asyncio
+import datetime
+from typing import Dict, List
+from pyrogram import Client, filters
+from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.errors import MessageNotModified, FloodWait
+from info import ADMINS
+import logging
 
-imdb = Cinemagoer() 
+LOGGER = logging.getLogger(__name__)
 
-class temp(object):
-    START_TIME = 0
-    BANNED_USERS = []
-    BANNED_CHATS = []
-    ME = None
-    CANCEL = False
-    U_NAME = None
-    B_NAME = None
-    SETTINGS = {}
-    VERIFICATIONS = {}
-    FILES = {}
-    USERS_CANCEL = False
-    GROUPS_CANCEL = False
-    BOT = None
-    PREMIUM = {}
-    SMART_PREVIEWS = {}
+# Helper functions
+def get_readable_time(seconds: int) -> str:
+    """
+    Convert seconds to readable time format
+    """
+    count = 0
+    ping_time = ""
+    time_list = []
+    time_suffix_list = ["s", "m", "h", "days"]
 
-async def is_subscribed(bot, query, channel):
-    btn = []
-    for id in channel:
-        chat = await bot.get_chat(int(id))
-        try:
-            await bot.get_chat_member(id, query.from_user.id)
-        except UserNotParticipant:
-            btn.append(
-                [InlineKeyboardButton(f'Join {chat.title}', url=chat.invite_link)]
-            )
-        except Exception as e:
-            pass
-    return btn
+    while count < 4:
+        count += 1
+        remainder, result = divmod(seconds, 60) if count < 3 else divmod(seconds, 24)
+        if seconds == 0 and remainder == 0:
+            break
+        time_list.append(int(result))
+        seconds = int(remainder)
 
+    for x in range(len(time_list)):
+        time_list[x] = str(time_list[x]) + time_suffix_list[x]
+    if len(time_list) == 4:
+        ping_time += time_list.pop() + ", "
 
-# GoFile upload functionality removed as requested
+    time_list.reverse()
+    ping_time += ":".join(time_list)
 
+    return ping_time
 
-async def get_poster(query, bulk=False, id=False, file=None):
-    if not id:
-        query = (query.strip()).lower()
-        title = query
-        year = re.findall(r'[1-2]\d{3}$', query, re.IGNORECASE)
-        if year:
-            year = list_to_str(year[:1])
-            title = (query.replace(year, "")).strip()
-        elif file is not None:
-            year = re.findall(r'[1-2]\d{3}', file, re.IGNORECASE)
-            if year:
-                year = list_to_str(year[:1]) 
-        else:
-            year = None
-        movieid = imdb.search_movie(title.lower(), results=10)
-        if not movieid:
-            return None
-        if year:
-            filtered=list(filter(lambda k: str(k.get('year')) == str(year), movieid))
-            if not filtered:
-                filtered = movieid
-        else:
-            filtered = movieid
-        movieid=list(filter(lambda k: k.get('kind') in ['movie', 'tv series'], filtered))
-        if not movieid:
-            movieid = filtered
-        if bulk:
-            return movieid
-        movieid = movieid[0].movieID
-    else:
-        movieid = query
-    movie = imdb.get_movie(movieid)
-    if movie.get("original air date"):
-        date = movie["original air date"]
-    elif movie.get("year"):
-        date = movie.get("year")
-    else:
-        date = "N/A"
-    plot = ""
-    if not LONG_IMDB_DESCRIPTION:
-        plot = movie.get('plot')
-        if plot and len(plot) > 0:
-            plot = plot[0]
-    else:
-        plot = movie.get('plot outline')
-    if plot and len(plot) > 800:
-        plot = plot[0:800] + "..."
-    return {
-        'title': movie.get('title'),
-        'votes': movie.get('votes'),
-        "aka": list_to_str(movie.get("akas")),
-        "seasons": movie.get("number of seasons"),
-        "box_office": movie.get('box office'),
-        'localized_title': movie.get('localized title'),
-        'kind': movie.get("kind"),
-        "imdb_id": f"tt{movie.get('imdbID')}",
-        "cast": list_to_str(movie.get("cast")),
-        "runtime": list_to_str(movie.get("runtimes")),
-        "countries": list_to_str(movie.get("countries")),
-        "certificates": list_to_str(movie.get("certificates")),
-        "languages": list_to_str(movie.get("languages")),
-        "director": list_to_str(movie.get("director")),
-        "writer":list_to_str(movie.get("writer")),
-        "producer":list_to_str(movie.get("producer")),
-        "composer":list_to_str(movie.get("composer")) ,
-        "cinematographer":list_to_str(movie.get("cinematographer")),
-        "music_team": list_to_str(movie.get("music department")),
-        "distributors": list_to_str(movie.get("distributors")),
-        'release_date': date,
-        'year': movie.get('year'),
-        'genres': list_to_str(movie.get("genres")),
-        'poster': movie.get('full-size cover url'),
-        'plot': plot,
-        'rating': str(movie.get("rating")),
-        'url':f'https://www.imdb.com/title/tt{movieid}'
-    }
-
-async def is_check_admin(bot, chat_id, user_id):
-    try:
-        member = await bot.get_chat_member(chat_id, user_id)
-        return member.status in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]
-    except:
-        return False
-
-async def get_verify_status(user_id):
-    verify = temp.VERIFICATIONS.get(user_id)
-    if not verify:
-        verify = await db.get_verify_status(user_id)
-        temp.VERIFICATIONS[user_id] = verify
-    return verify
-
-async def update_verify_status(user_id, verify_token="", is_verified=False, link="", expire_time=0):
-    current = await get_verify_status(user_id)
-    current['verify_token'] = verify_token
-    current['is_verified'] = is_verified
-    current['link'] = link
-    current['expire_time'] = expire_time
-    temp.VERIFICATIONS[user_id] = current
-    await db.update_verify_status(user_id, current)
-
+def get_readable_size(size_in_bytes: int) -> str:
+    """
+    Convert size in bytes to human-readable format
+    """
+    if size_in_bytes is None:
+        return "0B"
     
-async def broadcast_messages(user_id, message, pin):
-    try:
-        m = await message.copy(chat_id=user_id)
-        if pin:
-            await m.pin(both_sides=True)
-        return "Success"
-    except FloodWait as e:
-        await asyncio.sleep(e.value)
-        return await broadcast_messages(user_id, message, pin)
-    except Exception as e:
-        await db.delete_user(int(user_id))
-        return "Error"
+    index = 0
+    size_units = ["B", "KB", "MB", "GB", "TB", "PB"]
+    
+    while size_in_bytes >= 1024 and index < len(size_units) - 1:
+        size_in_bytes /= 1024
+        index += 1
+        
+    return f"{size_in_bytes:.2f}{size_units[index]}"
 
-async def groups_broadcast_messages(chat_id, message, pin):
+# Command handlers
+@Client.on_message(filters.command("ping"))
+async def ping_command(client, message: Message):
+    """
+    Check bot response time
+    """
+    start_time = time.time()
+    msg = await message.reply_text("Pinging...")
+    end_time = time.time()
+    
+    ping_time = round((end_time - start_time) * 1000, 3)
+    uptime = get_readable_time((time.time() - client.start_time))
+    
+    await msg.edit_text(
+        f"**PONG!**\n⏱️ `{ping_time}ms`\n⬆️ Uptime: {uptime}"
+    )
+
+@Client.on_message(filters.command("info"))
+async def info_command(client, message: Message):
+    """
+    Get information about a user
+    """
+    # Check if command is a reply to a message
+    if message.reply_to_message and message.reply_to_message.from_user:
+        user = message.reply_to_message.from_user
+    elif len(message.command) > 1:
+        # Get user by username or id
+        try:
+            user_id = message.command[1]
+            if user_id.startswith("@"):
+                # It's a username
+                user = await client.get_users(user_id)
+            elif user_id.isdigit():
+                # It's a user id
+                user = await client.get_users(int(user_id))
+            else:
+                await message.reply_text("Invalid username or ID.")
+                return
+        except Exception as e:
+            await message.reply_text(f"Error: {str(e)}")
+            return
+    else:
+        # Get info of the command sender
+        user = message.from_user
+    
+    # Create message
+    text = f"**User Information**\n\n"
+    text += f"**Name:** {user.mention}\n"
+    text += f"**ID:** `{user.id}`\n"
+    text += f"**Username:** @{user.username if user.username else 'None'}\n"
+    text += f"**DC ID:** {user.dc_id if user.dc_id else 'Unknown'}\n"
+    text += f"**Status:** {user.status if hasattr(user, 'status') else 'Unknown'}\n"
+    text += f"**Is Bot:** {'Yes' if user.is_bot else 'No'}\n"
+    text += f"**Is Scam:** {'Yes' if user.is_scam else 'No'}\n"
+    text += f"**Is Verified:** {'Yes' if user.is_verified else 'No'}\n"
+    
+    # Create keyboard
+    keyboard = [
+        [InlineKeyboardButton("Profile Link", url=f"tg://user?id={user.id}")]
+    ]
+    
+    # Add admin check button if in a group
+    if message.chat.type != "private":
+        keyboard.append([InlineKeyboardButton("Check Admin Rights", callback_data=f"check_admin_{user.id}")])
+    
+    await message.reply_text(
+        text,
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+@Client.on_callback_query(filters.regex(r"^check_admin_(.*)"))
+async def check_admin_callback(client, callback_query):
+    """
+    Check admin rights of a user
+    """
+    user_id = int(callback_query.data.split("_")[2])
+    chat_id = callback_query.message.chat.id
+    
     try:
-        k = await message.copy(chat_id=chat_id)
-        if pin:
+        # Get the admin status
+        member = await client.get_chat_member(chat_id, user_id)
+        
+        if member.status == "creator":
+            status_text = "👑 Owner"
+        elif member.status == "administrator":
+            status_text = "⚜️ Administrator"
+            
+            # Check admin rights
+            admin_rights = []
+            if member.can_change_info:
+                admin_rights.append("Change Chat Info")
+            if member.can_delete_messages:
+                admin_rights.append("Delete Messages")
+            if member.can_restrict_members:
+                admin_rights.append("Ban Users")
+            if member.can_invite_users:
+                admin_rights.append("Invite Users")
+            if member.can_pin_messages:
+                admin_rights.append("Pin Messages")
+            if member.can_promote_members:
+                admin_rights.append("Add Admins")
+            
+            status_text += "\n**Privileges:**\n- " + "\n- ".join(admin_rights)
+        else:
+            status_text = "Not an Admin"
+        
+        await callback_query.answer(f"Admin status: {member.status}", show_alert=True)
+        await callback_query.edit_message_text(
+            callback_query.message.text + f"\n\n**Admin Status:** {status_text}"
+        )
+    except Exception as e:
+        await callback_query.answer(f"Error: {str(e)}", show_alert=True)
+
+@Client.on_message(filters.command("purge") & filters.group)
+async def purge_command(client, message: Message):
+    """
+    Purge messages from a user
+    """
+    # Check if the bot has delete permission
+    bot_member = await message.chat.get_member("me")
+    if not bot_member.can_delete_messages:
+        await message.reply_text("I don't have permission to delete messages.")
+        return
+    
+    # Check if the user has delete permission
+    user_member = await message.chat.get_member(message.from_user.id)
+    if not user_member.can_delete_messages and message.from_user.id not in ADMINS:
+        await message.reply_text("You don't have permission to delete messages.")
+        return
+    
+    # Check if the message is a reply
+    if not message.reply_to_message:
+        await message.reply_text("Reply to a message to start purging from.")
+        return
+    
+    # Get message IDs
+    start_message_id = message.reply_to_message.message_id
+    end_message_id = message.message_id
+    
+    # Create a list of message IDs to delete
+    message_ids = list(range(start_message_id, end_message_id + 1))
+    
+    # Count number of messages to delete
+    msg_count = len(message_ids)
+    
+    # Check if there are too many messages to delete
+    if msg_count > 100:
+        await message.reply_text(
+            "You can only purge up to 100 messages at once."
+        )
+        return
+    
+    # Delete messages
+    deleted_count = 0
+    try:
+        # Delete messages
+        await client.delete_messages(
+            chat_id=message.chat.id,
+            message_ids=message_ids
+        )
+        deleted_count = msg_count
+    except Exception as e:
+        LOGGER.error(f"Error in purge: {str(e)}")
+        # Try one by one if bulk delete fails
+        for msg_id in message_ids:
             try:
-                await k.pin()
-            except:
+                await client.delete_messages(
+                    chat_id=message.chat.id,
+                    message_ids=[msg_id]
+                )
+                deleted_count += 1
+            except Exception:
                 pass
-        return "Success"
-    except FloodWait as e:
-        await asyncio.sleep(e.value)
-        return await groups_broadcast_messages(chat_id, message, pin)
-    except Exception as e:
-        await db.delete_chat(chat_id)
-        return "Error"
-
-async def get_settings(group_id):
-    settings = temp.SETTINGS.get(group_id)
-    if not settings:
-        settings = await db.get_settings(group_id)
-        temp.SETTINGS.update({group_id: settings})
-    return settings
     
-async def save_group_settings(group_id, key, value):
-    current = await get_settings(group_id)
-    current.update({key: value})
-    temp.SETTINGS.update({group_id: current})
-    await db.update_settings(group_id, current)
-
-def get_size(size):
-    units = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB"]
-    size = float(size)
-    i = 0
-    while size >= 1024.0 and i < len(units):
-        i += 1
-        size /= 1024.0
-    return "%.2f %s" % (size, units[i])
-
-def list_to_str(k):
-    if not k:
-        return "N/A"
-    elif len(k) == 1:
-        return str(k[0])
-    else:
-        return ', '.join(f'{elem}' for elem in k)
+    # Send success message
+    purge_msg = await message.reply_text(f"Purged {deleted_count} messages.")
     
-async def get_shortlink(url, api, link):
-    shortzy = Shortzy(api_key=api, base_site=url)
-    link = await shortzy.convert(link)
-    return link
-
-def get_readable_time(seconds):
-    periods = [('d', 86400), ('h', 3600), ('m', 60), ('s', 1)]
-    result = ''
-    for period_name, period_seconds in periods:
-        if seconds >= period_seconds:
-            period_value, seconds = divmod(seconds, period_seconds)
-            result += f'{int(period_value)}{period_name}'
-    return result
-
-def get_wish():
-    time = datetime.now(TIME_ZONE)
-    now = time.strftime("%H")
-    if now < "12":
-        status = "ɢᴏᴏᴅ ᴍᴏʀɴɪɴɢ 🌞"
-    elif now < "18":
-        status = "ɢᴏᴏᴅ ᴀꜰᴛᴇʀɴᴏᴏɴ 🌗"
-    else:
-        status = "ɢᴏᴏᴅ ᴇᴠᴇɴɪɴɢ 🌘"
-    return status
-    
-async def get_seconds(time_string):
-    def extract_value_and_unit(ts):
-        value = ""
-        unit = ""
-        index = 0
-        while index < len(ts) and ts[index].isdigit():
-            value += ts[index]
-            index += 1
-        unit = ts[index:]
-        if value:
-            value = int(value)
-        return value, unit
-    value, unit = extract_value_and_unit(time_string)
-    if unit == 's':
-        return value
-    elif unit == 'min':
-        return value * 60
-    elif unit == 'hour':
-        return value * 3600
-    elif unit == 'day':
-        return value * 86400
-    elif unit == 'month':
-        return value * 86400 * 30
-    elif unit == 'year':
-        return value * 86400 * 365
-    else:
-        return 0
-        
-async def create_backup_and_send(bot, chat_id, reply_to_message_id=None):
-    """Create a backup of the code and send it to the specified chat id."""
-    import os
-    import time
-    import zipfile
-    import shutil
-    import logging
-    
-    try:
-        # Create a temporary directory for backup
-        temp_dir = f"backup_{int(time.time())}"
-        os.makedirs(temp_dir, exist_ok=True)
-        
-        # Define files and directories to backup
-        backup_items = [
-            "bot.py", "info.py", "utils.py", "Script.py", 
-            "plugins", "database", "web", "imgs", ".env",
-            "main.py", "run_bot.sh", "requirements.txt"
-        ]
-        
-        # Copy files to the temporary directory
-        for item in backup_items:
-            try:
-                if os.path.isfile(item):
-                    shutil.copy2(item, os.path.join(temp_dir, item))
-                elif os.path.isdir(item):
-                    shutil.copytree(item, os.path.join(temp_dir, item))
-            except Exception as e:
-                print(f"Warning: Could not backup {item}: {e}")
-        
-        # Create a zip file
-        timestamp = time.strftime('%Y%m%d_%H%M%S')
-        zip_filename = f"bot_backup_{timestamp}.zip"
-        with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for root, dirs, files in os.walk(temp_dir):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, temp_dir)
-                    zipf.write(file_path, arcname)
-        
-        # Send the backup
-        try:
-            # Use send_document instead of send_file
-            await bot.send_document(
-                chat_id=chat_id,
-                document=zip_filename,
-                caption=f"📦 <b>Backup file attached</b>",
-                file_name=f"bot_backup_{timestamp}.zip",
-                force_document=True,
-                reply_to_message_id=reply_to_message_id
-            )
-            print(f"✅ Backup successfully sent to chat ID: {chat_id}")
-            return True
-        except Exception as e:
-            print(f"❌ Failed to send backup: {e}")
-            # Try an alternative method if the first one fails
-            try:
-                with open(zip_filename, "rb") as file:
-                    await bot.send_document(
-                        chat_id=chat_id,
-                        document=file,
-                        caption=f"📦 <b>Backup file attached</b>",
-                        file_name=f"bot_backup_{timestamp}.zip",
-                        reply_to_message_id=reply_to_message_id
-                    )
-                print(f"✅ Backup successfully sent on second attempt to chat ID: {chat_id}")
-                return True
-            except Exception as e2:
-                print(f"❌ Second attempt to send backup failed: {e2}")
-                return False
-        
-    except Exception as e:
-        print(f"❌ Error creating backup: {e}")
-        return False
-    
-    finally:
-        # Clean up but don't immediately delete the zip file (keep it for 10 minutes)
-        try:
-            if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
-            # Leave zip file for a while in case manual sending is needed
-            # A separate process could clean this up later
-        except Exception as e:
-            print(f"Warning: Failed to clean up temporary files: {e}")
+    # Delete the success message after 5 seconds
+    await asyncio.sleep(5)
+    await purge_msg.delete()
