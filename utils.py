@@ -12,6 +12,22 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
+class temp(object):
+     START_TIME = 0
+     BANNED_USERS = []
+     BANNED_CHATS = []
+     ME = None
+     CANCEL = False
+     U_NAME = None
+     B_NAME = None
+     SETTINGS = {}
+     VERIFICATIONS = {}
+     FILES = {}
+     USERS_CANCEL = False
+     GROUPS_CANCEL = False
+     BOT = None
+     PREMIUM = {}
+     SMART_PREVIEWS = {}
 # Helper functions
 def get_readable_time(seconds: int) -> str:
     """
