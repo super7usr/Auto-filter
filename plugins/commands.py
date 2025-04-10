@@ -169,62 +169,30 @@ async def start_cmd_for_web(client, message):
 
     # Handle file links with different formats (file_GROUP_ID_FILE_ID, file_pm_FILE_ID, file_web_FILE_ID)
     if mc.startswith('file'):
-        try:
-            # Split into parts
-            parts = mc.split("_", 2)  # Split into up to 3 parts
-
-            if len(parts) >= 3:
-                link_type = parts[1]
-                file_id = parts[2]
-
-                # Handle different file link formats
-                if link_type == 'pm' or link_type == '1927155351':
-                    # Handle PM-specific format for private messages
-                    grp_id = "1927155351"  # Use custom default group ID for PM
-                    type_ = 'pm_file'
-                elif link_type == 'web':
-                    # Handle web-specific format
-                    grp_id = "1927155351"  # Use custom default group ID for web
-                    type_ = 'web_file'
-                else:
-                    # Treat as regular group ID (original format)
-                    grp_id = link_type
-                    type_ = 'file'
-            else:
-                return await message.reply('Invalid file link format! Use file_GROUP_ID_FILE_ID, file_pm_FILE_ID, or file_web_FILE_ID')
-
-            files_ = await get_file_details(file_id)
-            if not files_:
-                return await message.reply('No such file exists!')
-            files = files_[0]
-            settings = await get_settings(int(grp_id))
-        except Exception as e:
-            return await message.reply(f'Error processing file: {str(e)}')
-    # Handle direct file IDs that don't follow our expected format
-    elif not any(mc.startswith(prefix) for prefix in ['verify', 'shortlink', 'all']):
-        try:
-            # Check if it's a valid file ID
-            files_ = await get_file_details(mc)
-            if files_:
-                files = files_[0]
-                file_id = files.file_id
-                grp_id = "1"  # Always use default group
-                settings = await get_settings(int(grp_id))
-                type_ = 'direct'
-            else:
-                # Regular unknown parameter
-                await message.reply(f"I found this start parameter but couldn't process it: `{mc}`\n\nPlease use a valid file link.")
-                btn = [[
-                    InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
-                ]]
-                await message.reply("You can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
-                return
-        except Exception as e:
+        parts = mc.split("_", 2)
+        if len(parts) != 3:
             btn = [[
                 InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
             ]]
-            await message.reply(f"Error processing your request: `{str(e)}`\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+            await message.reply(f"Invalid file link format. Use file_GROUP_ID_FILE_ID, file_pm_FILE_ID, or file_web_FILE_ID format.\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
             return
+        link_type = parts[1]
+        file_id = parts[2]
+        if link_type == "pm" or link_type == "web":
+            group_id = 1927155351  # Your default group ID for PM and web
+            grp_id = str(group_id)
+            type_ = f"{link_type}_file"
+        else:
+            try:
+                group_id = int(link_type)
+                grp_id = link_type
+                type_ = 'file'
+            except ValueError:
+                btn = [[
+                    InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+                ]]
+                await message.reply(f"Invalid group ID in link. Must be numeric for standard group links.\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+                return
     elif mc.startswith('shortlink'):
         # Handle shortlink format - simplified to always use default group
         try:
