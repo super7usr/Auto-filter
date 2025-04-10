@@ -27,7 +27,7 @@ async def start_cmd_for_web(client, message):
         ]]
         await message.reply(text=f"<b>Hey {user},\nHow can I help you??</b>", reply_markup=InlineKeyboardMarkup(btn))
         return 
-        
+
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
         await client.send_message(LOG_CHANNEL, script.NEW_USER_TXT.format(message.from_user.mention, message.from_user.id))
@@ -45,7 +45,6 @@ async def start_cmd_for_web(client, message):
             InlineKeyboardButton('🧑‍💻 Support', url=SUPPORT_LINK)
         ],[
             InlineKeyboardButton('👨‍🚒 Help', callback_data='help'),
-            InlineKeyboardButton('🔎 Search Inline', switch_inline_query_current_chat=''),
             InlineKeyboardButton('📚 About', callback_data='about')
         ],[
             InlineKeyboardButton('💰 Earn Unlimited Money by Bot 💰', callback_data='earn')
@@ -77,7 +76,7 @@ async def start_cmd_for_web(client, message):
             reply_markup = InlineKeyboardMarkup(btn)
         await message.reply(f"✅ You successfully verified until: {get_readable_time(VERIFY_EXPIRE)}", reply_markup=reply_markup, protect_content=True)
         return
-    
+
     verify_status = await get_verify_status(message.from_user.id)
     if IS_VERIFY and not verify_status['is_verified']:
         token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
@@ -91,7 +90,16 @@ async def start_cmd_for_web(client, message):
         await message.reply("You not verified today! Kindly verify now. 🔐", reply_markup=InlineKeyboardMarkup(btn), protect_content=True)
         return
 
-    settings = await get_settings(int(mc.split("_", 2)[1]))
+    # Try to get settings, handle potential format errors
+    try:
+        settings = await get_settings(int(mc.split("_", 2)[1]))
+    except (IndexError, ValueError):
+        btn = [[
+            InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+        ]]
+        await message.reply(f"Invalid file link format. Use file_GROUP_ID_FILE_ID format.", reply_markup=InlineKeyboardMarkup(btn))
+        return
+
     if settings['fsub']:
         btn = await is_subscribed(client, message, settings['fsub'])
         if btn:
@@ -106,7 +114,7 @@ async def start_cmd_for_web(client, message):
                 parse_mode=enums.ParseMode.HTML
             )
             return 
-        
+
     if mc.startswith('all'):
         _, grp_id, key = mc.split("_", 2)
         files = temp.FILES.get(key)
@@ -159,32 +167,108 @@ async def start_cmd_for_web(client, message):
         await vp.edit("The File has been gone ! Click given button to get it again.", reply_markup=InlineKeyboardMarkup(buttons))
         return
 
-    # Check if it's a direct file link without group_id
+    # Handle file links with different formats (file_GROUP_ID_FILE_ID, file_pm_FILE_ID, file_web_FILE_ID)
     if mc.startswith('file'):
-        parts = mc.split("_")
-        if len(parts) == 2:
-            # Format: file_FILE_ID
-            _, "1", file_id = parts
+        try:
+            # Split into parts
+            parts = mc.split("_", 2)  # Split into up to 3 parts
+
+            if len(parts) >= 3:
+                link_type = parts[1]
+                file_id = parts[2]
+
+                # Handle different file link formats
+                if link_type == 'pm' or link_type == '1927155351':
+                    # Handle PM-specific format for private messages
+                    grp_id = "1927155351"  # Use custom default group ID for PM
+                    type_ = 'pm_file'
+                elif link_type == 'web':
+                    # Handle web-specific format
+                    grp_id = "1927155351"  # Use custom default group ID for web
+                    type_ = 'web_file'
+                else:
+                    # Treat as regular group ID (original format)
+                    grp_id = link_type
+                    type_ = 'file'
+            else:
+                return await message.reply('Invalid file link format! Use file_GROUP_ID_FILE_ID, file_pm_FILE_ID, or file_web_FILE_ID')
+
             files_ = await get_file_details(file_id)
-            files = files_[0]
-            # Use default settings since we don't have a group_id
-            settings = await get_settings(1)  # Use default group ID (usually 1)
-            # Set grp_id to 1 for the callback data
-            grp_id = "1"
-        elif len(parts) == 3:
-            # Original format: file_GROUP_ID_FILE_ID
-            _, grp_id, file_id = parts
-            files_ = await get_file_details(file_id)
+            if not files_:
+                return await message.reply('No such file exists!')
             files = files_[0]
             settings = await get_settings(int(grp_id))
-        else:
-            return await message.reply('Invalid file link format!')
+        except Exception as e:
+            return await message.reply(f'Error processing file: {str(e)}')
+    # Handle direct file IDs that don't follow our expected format
+    elif not any(mc.startswith(prefix) for prefix in ['verify', 'shortlink', 'all']):
+        try:
+            # Check if it's a valid file ID
+            files_ = await get_file_details(mc)
+            if files_:
+                files = files_[0]
+                file_id = files.file_id
+                grp_id = "1"  # Always use default group
+                settings = await get_settings(int(grp_id))
+                type_ = 'direct'
+            else:
+                # Regular unknown parameter
+                await message.reply(f"I found this start parameter but couldn't process it: `{mc}`\n\nPlease use a valid file link.")
+                btn = [[
+                    InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+                ]]
+                await message.reply("You can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+                return
+        except Exception as e:
+            btn = [[
+                InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+            ]]
+            await message.reply(f"Error processing your request: `{str(e)}`\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+            return
+    elif mc.startswith('shortlink'):
+        # Handle shortlink format - simplified to always use default group
+        try:
+            parts = mc.split("_", 1)
+            if len(parts) != 2:
+                return await message.reply('Invalid shortlink format!')
+
+            file_id = parts[1]
+            grp_id = "1"  # Always use default group
+            settings = await get_settings(int(grp_id))
+            type_ = 'shortlink'
+        except Exception as e:
+            btn = [[
+                InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+            ]]
+            await message.reply(f"Error processing shortlink: {str(e)}\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+            return
     else:
-    # Handle other start parameters if any
-        pass
-    
+        # For any other format, check if we're dealing with a file ID directly
+        try:
+            # Check if the mc contains a valid file ID that doesn't match our format patterns
+            files_ = await get_file_details(mc)
+            if files_:
+                files = files_[0]
+                file_id = files.file_id
+                grp_id = "1"  # Use default group
+                settings = await get_settings(int(grp_id))
+                type_ = 'direct'
+            else:
+                # Unknown parameter
+                btn = [[
+                    InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+                ]]
+                await message.reply(f"I found this start parameter (`{mc}`) but couldn't find any matching file. Please search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+                return
+        except Exception as e:
+            btn = [[
+                InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+            ]]
+            await message.reply(f"Error processing your request: `{str(e)}`\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+            return
+
     if type_ != 'shortlink' and settings['shortlink']:
-        link = await get_shortlink(settings['url'], settings['api'], f"https://t.me/{temp.U_NAME}?start=shortlink_{grp_id}_{file_id}")
+        link = await get_shortlink(settings['url'], settings['api'], f"https://t.me/{temp.U_NAME}?start=shortlink_{file_id}")
         btn = [[
             InlineKeyboardButton("♻️ Get File ♻️", url=link)
         ],[
@@ -192,7 +276,7 @@ async def start_cmd_for_web(client, message):
         ]]
         await message.reply(f"[{get_size(files.file_size)}] {files.file_name}\n\nYour file is ready, Please get using this link. 👍", reply_markup=InlineKeyboardMarkup(btn), protect_content=True)
         return
-            
+
     CAPTION = settings['caption']
     f_caption = CAPTION.format(
         file_name = files.file_name,
@@ -269,7 +353,7 @@ async def stats(bot, message):
 
     uptime = get_readable_time(time_now() - temp.START_TIME)
     await message.reply_text(script.STATUS_TXT.format(files, users, chats, used_size, free_size, secnd_used_size, secnd_free_size, uptime))    
-    
+
 @Client.on_message(filters.command('settings'))
 async def settings(client, message):
     userid = message.from_user.id if message.from_user else None
@@ -336,7 +420,7 @@ async def save_template(client, message):
         return await message.reply_text("Command Incomplete!")   
     await save_group_settings(grp_id, 'template', template)
     await message.reply_text(f"Successfully changed template for {title} to\n\n{template}")  
-    
+
 @Client.on_message(filters.command('set_caption'))
 async def save_caption(client, message):
     userid = message.from_user.id if message.from_user else None
@@ -355,7 +439,7 @@ async def save_caption(client, message):
         return await message.reply_text("Command Incomplete!") 
     await save_group_settings(grp_id, 'caption', caption)
     await message.reply_text(f"Successfully changed caption for {title} to\n\n{caption}")
-        
+
 @Client.on_message(filters.command('set_shortlink'))
 async def save_shortlink(client, message):
     userid = message.from_user.id if message.from_user else None
@@ -379,7 +463,7 @@ async def save_shortlink(client, message):
     await save_group_settings(grp_id, 'url', url)
     await save_group_settings(grp_id, 'api', api)
     await message.reply_text(f"Successfully changed shortlink for {title} to\n\nURL - {url}\nAPI - {api}")
-    
+
 @Client.on_message(filters.command('get_custom_settings'))
 async def get_custom_settings(client, message):
     userid = message.from_user.id if message.from_user else None
@@ -431,7 +515,7 @@ async def save_welcome(client, message):
         return await message.reply_text("Command Incomplete!")    
     await save_group_settings(grp_id, 'welcome_text', welcome)
     await message.reply_text(f"Successfully changed welcome for {title} to\n\n{welcome}")
-        
+
 @Client.on_message(filters.command('delete'))
 async def delete_file(bot, message):
     user_id = message.from_user.id
@@ -452,7 +536,7 @@ async def delete_file(bot, message):
         InlineKeyboardButton("CLOSE", callback_data="close_data")
     ]]
     await msg.edit(f"Total {total} files found in your query {query}.\n\nDo you want to delete?", reply_markup=InlineKeyboardMarkup(btn))
- 
+
 @Client.on_message(filters.command('delete_all'))
 async def delete_all_index(bot, message):
     user_id = message.from_user.id
@@ -496,7 +580,7 @@ async def ping(client, message):
     msg = await message.reply("👀")
     end_time = time_now.monotonic()
     await msg.edit(f'{round((end_time - start_time) * 1000)} ms')
-    
+
 
 @Client.on_message(filters.command('set_fsub'))
 async def set_fsub(client, message):
@@ -524,7 +608,7 @@ async def set_fsub(client, message):
         except Exception as e:
             return await message.reply_text(f"<code>{id}</code> is invalid!\nMake sure this bot admin in that channel.\n\nError - {e}")
         if chat.type != enums.ChatType.CHANNEL:
-            return await message.reply_text(f"<code>{id}</code> is not channel.")
+            return await message.replytext(f"<code>{id}</code> is not channel.")
         channels += f'{chat.title}\n'
     await save_group_settings(grp_id, 'fsub', fsub_ids)
     await message.reply_text(f"Successfully set force channels for {title} to\n\n<code>{channels}</code>")
@@ -546,4 +630,3 @@ async def remove_fsub(client, message):
         return
     await save_group_settings(grp_id, 'fsub', FORCE_SUB_CHANNELS)
     await message.reply_text("<b>Successfully removed your force channel id...</b>")
-

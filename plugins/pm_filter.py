@@ -53,14 +53,13 @@ async def pm_search(client, message):
     # Always use web-like display for search results in private chat
     from info import URL
     search_query = message.text.replace(" ", "+")
-    
+
     # Create a web-like display with server links for each file
     files_link = ''
-    web_links = []
-    
+
     # Create buttons for additional options
     btn = []
-    
+
     # First, check if we need to use shortlinks
     if settings['shortlink']:
         # Create a web-style listing with shortlinks
@@ -68,16 +67,14 @@ async def pm_search(client, message):
             file_size = get_size(file.file_size)
             file_name = file.file_name
             # Use the direct file ID format for telegram link
-            telegram_link = f"https://t.me/{temp.U_NAME}?start=file_{file.file_id}" 
-            
+            telegram_link = f"https://t.me/{temp.U_NAME}?start=file_pm_{file.file_id}" 
+
             # Generate shortlink
             try:
                 short_link = await get_shortlink(settings['url'], settings['api'], telegram_link)
                 files_link += f"""<b>\n\n{file_num}. <a href="{short_link}">[{file_size}] {file_name}</a></b>"""
-                
-                # Add web link for the file
-                file_web_url = f"{URL}watch/{file.file_id}/{file.file_name.replace(' ', '_')}"
-                web_links.append(f"""<b>🌐 <a href="{file_web_url}">Watch Online</a></b>""")
+
+                # Web links will be handled centrally now, not per file
             except Exception as e:
                 print(f"Error generating shortlink: {e}")
                 # Fallback to regular link
@@ -88,25 +85,23 @@ async def pm_search(client, message):
             file_size = get_size(file.file_size)
             file_name = file.file_name
             # Use the direct file ID format for telegram link
-            telegram_link = f"https://t.me/{temp.U_NAME}?start=file_{file.file_id}"
+            telegram_link = f"https://t.me/{temp.U_NAME}?start=file_pm_{file.file_id}"
             files_link += f"""<b>\n\n{file_num}. <a href="{telegram_link}">[{file_size}] {file_name}</a></b>"""
-            
-            # Add web link for the file
-            file_web_url = f"{URL}watch/{file.file_id}/{file.file_name.replace(' ', '_')}"
-            web_links.append(f"""<b>🌐 <a href="{file_web_url}">Watch Online</a></b>""")
-    
+
+            # Web links will be handled centrally now, not per file
+
     # Add smart preview button 
     if files:
         btn.append([
             InlineKeyboardButton("🧠 Smart Preview", callback_data=f"smart_preview#{(files[0]).file_id}#{message.from_user.id}")
         ])
-    
+
     # Add mood search button
     btn.append([
         InlineKeyboardButton("🎭 Mood Search", callback_data="show_moods"),
         InlineKeyboardButton("🎬 IMDB", url=f"https://www.imdb.com/find?q={search_query}")
     ])
-    
+
     # Add web search button
     if add_web_search:
         web_search_url = f"{URL}movie?q={search_query}"
@@ -128,15 +123,15 @@ async def pm_search(client, message):
     # Combine file links with web links for a comprehensive view
     msg_text = f"<b>📥 Found {total_results} results for:</b> <code>{message.text}</code>"
     msg_text += files_link
-    
-    # Add a separator for web links if there are any
-    if web_links and len(web_links) <= 5:  # Only show the web links if there are not too many
-        msg_text += "\n\n<b>🌐 Web Links:</b>"
-        for idx, web_link in enumerate(web_links[:5]):  # Limit to first 5 to avoid message too long
-            msg_text += f"\n{web_link}"
-    
+
+    # Add a single web link instead of multiple ones
+    if files:
+        file = files[0]  # Use the first file for the watch online link
+        file_web_url = f"{URL}watch/{file.file_id}/{file.file_name.replace(' ', '_')}"
+        msg_text += f"\n\n<b>🌐 <a href=\"{file_web_url}\">Watch Online</a></b>"
+
     btn.append([InlineKeyboardButton("❌ Close ❌", callback_data="close_data")])
-    
+
     await message.reply_text(msg_text, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=True, parse_mode=enums.ParseMode.HTML)
 
 
@@ -549,8 +544,8 @@ async def quality_next_page(bot, query):
     await query.message.edit_text(cap + files_link + del_msg, reply_markup=InlineKeyboardMarkup(btn), disable_web_page_preview=True, parse_mode=enums.ParseMode.HTML)
 
 @Client.on_callback_query(filters.regex(r"^spolling"))
-async def advantage_spoll_choker(bot, query):
-    _, id, user = query.data.split('#')
+async def advantagespoll_choker(bot, query):
+    _, id, user =query.data.split('#')
     if int(user) != 0 and query.from_user.id != int(user):
         return await query.answer(f"Hello {query.from_user.first_name},\nDon't Click Other Results!", show_alert=True)
     movie = await get_poster(id, id=True)
@@ -574,33 +569,33 @@ async def advantage_spoll_choker(bot, query):
 @Client.on_callback_query(filters.regex(r"^smart_preview"))
 async def smart_preview_callback(client: Client, query: CallbackQuery):
     _, file_id, user_id = query.data.split("#")
-    
+
     # Check if user is authorized to see this preview
     if int(user_id) != 0 and query.from_user.id != int(user_id):
         return await query.answer(
             f"Hello {query.from_user.first_name},\nThis Smart Preview is not for you!",
             show_alert=True
         )
-    
+
     # Get the smart preview from temp storage
     smart_preview_text = temp.SMART_PREVIEWS.get(file_id)
-    
+
     if not smart_preview_text:
         # If no preview is stored, try to generate it on the fly
         try:
             # Find the file in the database
             from database.ia_filterdb import get_file_details
             file_details = await get_file_details(file_id)
-            
+
             if file_details:
                 file = file_details[0]
                 # Get search term from the original message or use the filename
                 search_query = query.message.text.split("results for:")[1].split("\n")[0].strip() if "results for:" in query.message.text else file.file_name
-                
+
                 # Generate metadata and preview
                 enhanced_metadata = await smart_analyzer.get_enhanced_metadata(search_query, file.file_name)
                 smart_preview_text = smart_analyzer.generate_smart_preview(enhanced_metadata)
-                
+
                 # Store for future use
                 temp.SMART_PREVIEWS[file_id] = smart_preview_text
             else:
@@ -608,7 +603,7 @@ async def smart_preview_callback(client: Client, query: CallbackQuery):
         except Exception as e:
             print(f"Error generating smart preview: {e}")
             smart_preview_text = "<b>❌ Could not generate smart preview: Error in processing file metadata.</b>"
-    
+
     # Create buttons
     if 'results for:' in query.message.text:
         search_term = query.message.text.split('results for:')[1].split('\n')[0].strip()
@@ -617,18 +612,18 @@ async def smart_preview_callback(client: Client, query: CallbackQuery):
             search_term = file.file_name
         except:
             search_term = "Unknown"
-        
+
     btn = [
         [InlineKeyboardButton("🔍 IMDb", url=f"https://www.imdb.com/find?q={search_term}"),
          InlineKeyboardButton("🎬 Download", callback_data=f"file#{file_id}")]
     ]
-    
+
     # Add close button
     btn.append([InlineKeyboardButton("❌ Close", callback_data="close_data")])
-    
+
     # Option to view interactive preview
     btn.insert(0, [InlineKeyboardButton("🌟 Interactive Preview", callback_data=f"preview_page#{file_id}#{user_id}#0")])
-    
+
     # Send as a new message to avoid replacing the search results
     await query.answer("Generating Smart Preview...")
     await client.send_message(
@@ -641,23 +636,23 @@ async def smart_preview_callback(client: Client, query: CallbackQuery):
 @Client.on_callback_query(filters.regex(r"^preview_page"))
 async def preview_page_callback(client: Client, query: CallbackQuery):
     _, file_id, user_id, page_index = query.data.split("#")
-    
+
     # Check if user is authorized to see this preview
     if int(user_id) != 0 and query.from_user.id != int(user_id):
         return await query.answer(
             f"Hello {query.from_user.first_name},\nThis Interactive Preview is not for you!",
             show_alert=True
         )
-    
+
     try:
         # Get file details
         file_details = await get_file_details(file_id)
         if not file_details:
             return await query.answer("File not found! Please try a different file.", show_alert=True)
-        
+
         file = file_details[0]
         file_name = file.file_name
-        
+
         # Generate the preview content and markup
         content, markup = await preview_wizard.generate_preview_markup(
             file_id=file_id,
@@ -665,16 +660,16 @@ async def preview_page_callback(client: Client, query: CallbackQuery):
             user_id=user_id,
             current_page=int(page_index)
         )
-        
+
         # Edit the message to show the new page
         await query.message.edit_text(
             text=content,
             reply_markup=markup,
             parse_mode=enums.ParseMode.HTML
         )
-        
+
         await query.answer(f"Viewing page {int(page_index) + 1}")
-        
+
     except Exception as e:
         print(f"Error in preview wizard: {e}")
         await query.answer("Error generating preview. Please try again.", show_alert=True)
@@ -695,7 +690,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         except:
             pass
 
-    if query.data.startswith("file"):
+    elif query.data.startswith("file"):
         ident, file_id = query.data.split("#")
         try:
             user = query.message.reply_to_message.from_user.id
@@ -703,12 +698,18 @@ async def cb_handler(client: Client, query: CallbackQuery):
             user = query.message.from_user.id
         if int(user) != 0 and query.from_user.id != int(user):
             return await query.answer(f"Hello {query.from_user.first_name},\nDon't Click Other Results!", show_alert=True)
-        # Use the direct file ID format which is now supported
-        await query.answer(url=f"https://t.me/{temp.U_NAME}?start=file_{file_id}")
+
+        # Check if in private chat or group
+        if query.message.chat.type == enums.ChatType.PRIVATE:
+            # Use the standard format with the correct group ID for private messages
+            await query.answer(url=f"https://t.me/{temp.U_NAME}?start=file_1927155351_{file_id}")
+        else:
+            # Use the group ID format for group chats
+            await query.answer(url=f"https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file_id}")
 
     elif query.data.startswith("get_del_file"):
         ident, group_id, file_id = query.data.split("#")
-        # Use the legacy format with group_id for backward compatibility
+        # Use the format with group_id for backward compatibility
         await query.answer(url=f"https://t.me/{temp.U_NAME}?start=file_{group_id}_{file_id}")
         await query.message.delete()
 
@@ -884,8 +885,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
             InlineKeyboardButton('User Command', callback_data='user_command'),
             InlineKeyboardButton('Admin Command', callback_data='admin_command')
         ],[
-            InlineKeyboardButton('Filter Wizard', callback_data='filter_wizard_help')
-        ],[
             InlineKeyboardButton('🎭 Mood Search', callback_data='mood_cmd')
         ],[
             InlineKeyboardButton('« Back', callback_data='start')
@@ -905,28 +904,8 @@ async def cb_handler(client: Client, query: CallbackQuery):
             text=script.USER_COMMAND_TXT,
             reply_markup=reply_markup
         )
-        
-    elif query.data == "filter_wizard_help":
-        buttons = [[
-            InlineKeyboardButton('Setup Wizard Now', callback_data='setup_wizard_now'),
-            InlineKeyboardButton('« Back', callback_data='help')
-        ]]
-        reply_markup = InlineKeyboardMarkup(buttons)
-        await query.message.edit_text(
-            text=script.FILTER_WIZARD_TXT,
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
-        )
-        
-    elif query.data == "setup_wizard_now":
-        # Send the setup_filters command to the current chat
-        await client.send_message(
-            chat_id=query.message.chat.id,
-            text="/setup_filters",
-            disable_notification=True
-        )
-        # Delete the help message
-        await query.message.delete()
+
+    # Filter wizard functionality removed
 
     elif query.data == "admin_command":
         if query.from_user.id not in ADMINS:
@@ -1112,7 +1091,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             await query.message.reply(f"Successfully kicked deleted <code>{len(users_id)}</code> accounts.")
         else:
             await query.message.reply('Nothing to kick deleted accounts.')
-            
+
     # Mood-based filtering callbacks
     elif query.data == "mood_cmd":
         # Display the mood search help text
@@ -1128,17 +1107,17 @@ async def cb_handler(client: Client, query: CallbackQuery):
             parse_mode=enums.ParseMode.HTML,
             disable_web_page_preview=True
         )
-    
+
     elif query.data == "show_moods":
         # Import and call the mood filter module to show mood options
         from plugins.mood_filter import show_mood_options
         await show_mood_options(client, query)
-        
+
     elif query.data.startswith("mood_"):
         # Import and call the mood filter module to handle mood selection
         from plugins.mood_filter import handle_mood_selection
         await handle_mood_selection(client, query)
-        
+
     elif query.data == "back_to_search":
         # Import and call the mood filter module to go back to search
         from plugins.mood_filter import back_to_search
@@ -1203,7 +1182,7 @@ async def auto_filter(client, msg, s, spoll=False):
                  InlineKeyboardButton("🔍 Quality", callback_data=f"quality#{key}#{req}#{offset}")]
             )
             btn.insert(2,
-                [InlineKeyboardButton("♻️ Send All", callback_data=f"send_all#{key}#{req}")]
+                [InlineKeyboardButton("♻️ Send All ♻️", callback_data=f"send_all#{key}#{req}")]
             )
         btn.append(
             [InlineKeyboardButton(text=f"1/{math.ceil(int(total_results) / MAX_BTN)}", callback_data="buttons"),
@@ -1222,14 +1201,14 @@ async def auto_filter(client, msg, s, spoll=False):
     btn.insert(3, [
         InlineKeyboardButton("🧠 Smart Preview", callback_data=f"smart_preview#{(files[0]).file_id}#{req}")
     ])
-    
+
     # Get IMDb data for traditional display
     imdb = await get_poster(search, file=(files[0]).file_name) if settings["imdb"] else None
-    
+
     # Get enhanced metadata for first file
     first_file = files[0]
     enhanced_metadata = None
-    
+
     # Enable smart preview by default if IMDb data is available
     if settings.get("smart_preview", True) and imdb:
         try:
@@ -1241,7 +1220,7 @@ async def auto_filter(client, msg, s, spoll=False):
             temp.SMART_PREVIEWS[first_file.file_id] = smart_preview_text
         except Exception as e:
             print(f"Error generating smart preview: {e}")
-    
+
     # Use traditional template for regular display
     TEMPLATE = settings['template']
     if imdb:
