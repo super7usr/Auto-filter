@@ -164,7 +164,7 @@ async def start_cmd_for_web(client, message):
         parts = mc.split("_")
         if len(parts) == 2:
             # Format: file_FILE_ID
-            _, file_id = parts
+            _, "1", file_id = parts
             files_ = await get_file_details(file_id)
             files = files_[0]
             # Use default settings since we don't have a group_id
