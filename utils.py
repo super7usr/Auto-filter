@@ -337,12 +337,22 @@ async def create_backup_and_send(bot, chat_id, reply_to_message_id=None):
         return False
     
     finally:
-        # Clean up but don't immediately delete the zip file (keep it for 10 minutes)
+        # Clean up all temporary files including the ZIP
         try:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
-            # Leave zip file for a while in case manual sending is needed
-            # A separate process could clean this up later
+            if os.path.exists(zip_filename):
+                os.remove(zip_filename)
+            
+            # Clean up any existing backup ZIP files
+            for file in os.listdir():
+                if file.startswith("bot_backup_") and file.endswith(".zip"):
+                    try:
+                        os.remove(file)
+                        print(f"Cleaned up old backup: {file}")
+                    except Exception as e:
+                        print(f"Warning: Could not delete old backup {file}: {e}")
         except Exception as e:
             print(f"Warning: Failed to clean up temporary files: {e}")
-     
+
+    
