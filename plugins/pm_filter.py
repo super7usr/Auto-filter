@@ -22,11 +22,20 @@ async def pm_search(client, message):
     if message.text.startswith("/"):
         return
 
+    s = await message.reply("<b><i>⚠️ Processing your request...</i></b>")
     settings = await get_settings(message.chat.id)
-    files, offset, total_results = await get_search_results(message.text)
-
-    # Initialize web search button flag
-    add_web_search = True
+    search = message.text.strip()
+    files, offset, total_results = await get_search_results(search)
+    
+    if not files:
+        if settings["spell_check"]:
+            await advantage_spell_chok(message, s)
+            return
+        else:
+            await s.edit_text(f"👋 Hello {message.from_user.mention},\n\nI couldn't find <b>'{search}'</b> in my database. 😔")
+            return
+            
+    await auto_filter(client, message, s)
 
     if not files:
         if settings["spell_check"]:
@@ -699,13 +708,17 @@ async def cb_handler(client: Client, query: CallbackQuery):
         if int(user) != 0 and query.from_user.id != int(user):
             return await query.answer(f"Hello {query.from_user.first_name},\nDon't Click Other Results!", show_alert=True)
 
-        # Check if in private chat or group
+        # Check if in private chat or group and construct valid URL
+        base_url = f"https://t.me/{temp.U_NAME}"
         if query.message.chat.type == enums.ChatType.PRIVATE:
             # Use the standard format with the correct group ID for private messages
-            await query.answer(url=f"https://t.me/{temp.U_NAME}?start=file_1927155351_{file_id}")
+            valid_url = f"{base_url}?start=file_1927155351_{file_id}"
+            await query.answer(url=valid_url)
         else:
             # Use the group ID format for group chats
-            await query.answer(url=f"https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file_id}")
+            chat_id = str(query.message.chat.id).replace("-", "_")  # Handle negative chat IDs
+            valid_url = f"{base_url}?start=file_{chat_id}_{file_id}"
+            await query.answer(url=valid_url)
 
     elif query.data.startswith("get_del_file"):
         ident, group_id, file_id = query.data.split("#")
@@ -759,10 +772,10 @@ async def cb_handler(client: Client, query: CallbackQuery):
         ident, userid = query.data.split("#")
         user_id = query.from_user.id
         settings = await get_settings(int(query.message.chat.id))
-        if userid == 0:
+        if userid == "0":
             await query.answer("You are anonymous admin !", show_alert=True)
             return
-        if userid != user_id:
+        if userid != str(user_id):
             await query.answer("Not For You ☠️", show_alert=True)
             return
         btn = await is_subscribed(client, query, settings['fsub'])
@@ -783,18 +796,19 @@ async def cb_handler(client: Client, query: CallbackQuery):
         await query.answer("Movie request format.\nExample:\nBlack Adam or Black Adam 2022\n\nTV Reries request format.\nExample:\nLoki S01E01 or Loki S01 E01\n\nDon't use symbols.", show_alert=True)
 
     elif query.data == "start":
-        buttons = [[
-            InlineKeyboardButton("+ Add me to your Group +", url=f'http://t.me/{temp.U_NAME}?startgroup=start')
-        ],[
-            InlineKeyboardButton('ℹ️ Updates', url=UPDATES_LINK),
-            InlineKeyboardButton('💡 Support', url=SUPPORT_LINK)
-        ],[
+        buttons = []
+        buttons.append([InlineKeyboardButton("+ Add me to your Group +", url=f'http://t.me/{temp.U_NAME}?startgroup=start')])
+        if UPDATES_LINK and SUPPORT_LINK:
+            buttons.append([
+                InlineKeyboardButton('ℹ️ Updates', url=UPDATES_LINK),
+                InlineKeyboardButton('💡 Support', url=SUPPORT_LINK)
+            ])
+        buttons.extend([[
             InlineKeyboardButton('👨‍🚒 Help', callback_data='help'),
-            InlineKeyboardButton('🔎 search', switch_inline_query_current_chat=''),
             InlineKeyboardButton('📚 About', callback_data='about')
         ],[
-            InlineKeyboardButton('💰 earn money 💰', callback_data='earn')
-        ]]
+            InlineKeyboardButton('💰 Earn Money 💰', callback_data='earn')
+        ]])
         reply_markup = InlineKeyboardMarkup(buttons)
         await query.message.edit_text(
             text=script.START_TXT.format(query.from_user.mention),
@@ -1162,10 +1176,8 @@ async def auto_filter(client, msg, s, spoll=False):
         ]   
 
     # Add web search button for all results
-    btn.insert(0, [
-        InlineKeyboardButton("🌐 Web Search", url=web_search_url),
-        InlineKeyboardButton("🎬 IMDB Search", url=f"https://www.imdb.com/find?q={search_query}")
-    ])
+    # Remove web search buttons
+    pass
 
     if offset != "":
         if settings['shortlink']:
