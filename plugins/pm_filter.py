@@ -29,7 +29,7 @@ async def pm_search(client, message):
     
     if not files:
         search_query = search.replace(" ", "+")
-        web_search_url = f"https://www.google.com/search?q={search_query}"
+        web_search_url = f"{URL}/movie?q={search_query}"
         btn = [[
             InlineKeyboardButton("⚠️ Instructions", callback_data='instructions'),
             InlineKeyboardButton("🔎 Google Search", url=web_search_url)
@@ -62,7 +62,6 @@ async def pm_search(client, message):
         else:
             # No files and no spell check, send web search option
             search_query = message.text.replace(" ", "+")
-            from info import URL
             web_search_url = f"{URL}movie?q={search_query}"
             btn = [[
                 InlineKeyboardButton("🌐 Web Search", url=web_search_url)
@@ -1195,7 +1194,7 @@ async def auto_filter(client, msg, s, spoll=False):
 
     # Add web search button for all results
     if search_query:
-        web_search_url = f"https://www.google.com/search?q={search_query}"
+        web_search_url = f"{URL}/movie?q={search_query}"
         btn.append([
             InlineKeyboardButton("🌐 Web Search", url=web_search_url),
             InlineKeyboardButton("🎬 IMDB", url=f"https://www.imdb.com/find?q={search_query}")
