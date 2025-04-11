@@ -111,16 +111,10 @@ async def pm_search(client, message):
             file_size = get_size(file.file_size)
             file_name = file.file_name
             # Use the direct file ID format for telegram link
-            telegram_link = f"https://t.me/{temp.U_NAME}?start=file_pm_{file.file_id}"
+            telegram_link = f"https://t.me/{temp.U_NAME}?start=file_1927155351_{file.file_id}"
             files_link += f"""<b>\n\n{file_num}. <a href="{telegram_link}">[{file_size}] {file_name}</a></b>"""
 
             # Web links will be handled centrally now, not per file
-
-    # Add smart preview button 
-    if files:
-        btn.append([
-            InlineKeyboardButton("🧠 Smart Preview", callback_data=f"smart_preview#{(files[0]).file_id}#{message.from_user.id}")
-        ])
 
     # Add mood search button
     btn.append([
