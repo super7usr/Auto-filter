@@ -1,4 +1,4 @@
-import os
+import os, shutil
 import random
 import string
 import asyncio
@@ -11,7 +11,53 @@ from database.ia_filterdb import Media, get_file_details, delete_files
 from database.users_chats_db import db
 from info import SECOND_DATABASE_URL, TIME_ZONE, FORCE_SUB_CHANNELS, STICKERS, INDEX_CHANNELS, ADMINS, IS_VERIFY, VERIFY_TUTORIAL, VERIFY_EXPIRE, SHORTLINK_API, SHORTLINK_URL, DELETE_TIME, SUPPORT_LINK, UPDATES_LINK, LOG_CHANNEL, PICS, IS_STREAM, REACTIONS, PM_FILE_DELETE_TIME
 from utils import get_settings, get_size, is_subscribed, is_check_admin, get_shortlink, get_verify_status, update_verify_status, save_group_settings, temp, get_readable_time, get_wish, get_seconds
+from git import Repo
+import tempfile
 
+@Client.on_message(filters.command('update') & filters.user(ADMINS))
+async def update_bot(client, message):
+    """Update bot from GitHub repository"""
+    
+    if len(message.command) != 2:
+        await message.reply("Please provide the GitHub repository URL.\nFormat: /update github_url")
+        return
+        
+    github_url = message.command[1]
+    update_msg = await message.reply("ðŸ”„ Updating bot from GitHub...")
+    
+    try:
+        # Create temp directory
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Clone the repository
+            Repo.clone_from(github_url, temp_dir)
+            
+            # Copy files from temp directory to current directory
+            for item in os.listdir(temp_dir):
+                if item in ['.git', '.github', '__pycache__']:
+                    continue
+                    
+                source = os.path.join(temp_dir, item)
+                destination = os.path.join(os.getcwd(), item)
+                
+                if os.path.isdir(source):
+                    if os.path.exists(destination):
+                        shutil.rmtree(destination)
+                    shutil.copytree(source, destination)
+                else:
+                    shutil.copy2(source, destination)
+        
+        await update_msg.edit("âœ… Bot updated successfully! Restarting...")
+        
+        # Save restart message details
+        with open('restart.txt', 'w+') as file:
+            file.write(f"{message.chat.id}\n{update_msg.id}")
+            
+        # Restart the bot
+        os.execl(sys.executable, sys.executable, "bot.py")
+        
+    except Exception as e:
+        await update_msg.edit(f"âŒ Error updating bot: {str(e)}")
+        
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start_cmd_for_web(client, message):
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
