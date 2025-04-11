@@ -27,3 +27,4 @@ python-telegram-bot
 flask
 psutil
 openai
+gitpython 
