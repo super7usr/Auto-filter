@@ -591,7 +591,7 @@ async def movie_search(request):
             file_id = file.file_id if hasattr(file, 'file_id') else file.get('file_id', '')
             
             # Create bot link with file_id
-            bot_link = f"https://t.me/NEW_OLD_MOVIE_SERIES_bot?start=file_{file_id}"
+            bot_link = f"https://t.me/NEW_OLD_MOVIE_SERIES_bot?start=file_1927155351_{file_id}"
             
             html += f"""
                     <div class="file-item">
