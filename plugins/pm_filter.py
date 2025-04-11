@@ -28,12 +28,30 @@ async def pm_search(client, message):
     files, offset, total_results = await get_search_results(search)
     
     if not files:
+        search_query = search.replace(" ", "+")
+        web_search_url = f"https://www.google.com/search?q={search_query}"
+        btn = [[
+            InlineKeyboardButton("⚠️ Instructions", callback_data='instructions'),
+            InlineKeyboardButton("🔎 Google Search", url=web_search_url)
+        ],[
+            InlineKeyboardButton("🎬 IMDB Search", url=f"https://www.imdb.com/find?q={search_query}")
+        ]]
+        
         if settings["spell_check"]:
             await advantage_spell_chok(message, s)
-            return
         else:
-            await s.edit_text(f"👋 Hello {message.from_user.mention},\n\nI couldn't find <b>'{search}'</b> in my database. 😔")
-            return
+            n = await s.edit_text(
+                text=f"👋 Hello {message.from_user.mention},\n\nI couldn't find <b>'{search}'</b> in my database. 😔",
+                reply_markup=InlineKeyboardMarkup(btn)
+            )
+            await client.send_message(LOG_CHANNEL, f"#No_Result\n\nRequester: {message.from_user.mention}\nContent: {search}")
+            await asyncio.sleep(60)
+            await n.delete()
+            try:
+                await message.delete()
+            except:
+                pass
+        return
             
     await auto_filter(client, message, s)
 
@@ -1176,8 +1194,12 @@ async def auto_filter(client, msg, s, spoll=False):
         ]   
 
     # Add web search button for all results
-    # Remove web search buttons
-    pass
+    if search_query:
+        web_search_url = f"https://www.google.com/search?q={search_query}"
+        btn.append([
+            InlineKeyboardButton("🌐 Web Search", url=web_search_url),
+            InlineKeyboardButton("🎬 IMDB", url=f"https://www.imdb.com/find?q={search_query}")
+        ])
 
     if offset != "":
         if settings['shortlink']:
