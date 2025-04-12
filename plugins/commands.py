@@ -215,16 +215,16 @@ async def start_cmd_for_web(client, message):
 
     if mc.startswith('file'):
          _, grp_id, key = mc.split("_", 2)
-        try:
-            group_id = int(link_type)
-            grp_id = link_type
-            type_ = 'file'
-        except ValueError:
-            btn = [[
-                InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
-            ]]
-            await message.reply(f"Invalid group ID in link. Must be numeric for standard group links.\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
-            return
+         try:
+             group_id = int(link_type)
+             grp_id = link_type
+             type_ = 'file'
+         except ValueError:
+             btn = [[
+                 InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+             ]]
+             await message.reply(f"Invalid group ID in link. Must be numeric for standard group links.\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+             return
     elif mc.startswith('shortlink'):
         # Handle shortlink format - simplified to always use default group
         try:
