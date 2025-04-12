@@ -216,12 +216,12 @@ async def start_cmd_for_web(client, message):
     if mc.startswith('file'):
          _, grp_id, key = mc.split("_", 2)
          try:
-             group_id = int(link_type)
-             grp_id = link_type
+             group_id = int(grp_id)
+             grp_id = grp_id
              type_ = 'file'
          except ValueError:
              btn = [[
-                 InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+                 InlineKeyboardButton("Search Files", url=URL)
              ]]
              await message.reply(f"Invalid group ID in link. Must be numeric for standard group links.\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
              return
@@ -238,7 +238,7 @@ async def start_cmd_for_web(client, message):
             type_ = 'shortlink'
         except Exception as e:
             btn = [[
-                InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+                InlineKeyboardButton("Search Files", url=URL)
             ]]
             await message.reply(f"Error processing shortlink: {str(e)}\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
             return
