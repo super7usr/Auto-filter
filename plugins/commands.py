@@ -106,6 +106,19 @@ async def start_cmd_for_web(client, message):
 
     mc = message.command[1]
 
+    if mc.startswith('file'):
+        _, grp_id, key = mc.split("_", 2)
+        try:
+            group_id = int(grp_id)
+            grp_id = grp_id
+            type_ = 'file'
+        except ValueError:
+            btn = [[
+                InlineKeyboardButton("Search Files", url=URL)
+            ]]
+            await message.reply(f"Invalid group ID in link. Must be numeric for standard group links.\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+            return
+
     if mc.startswith('verify'):
         _, token = mc.split("_", 1)
         verify_status = await get_verify_status(message.from_user.id)
