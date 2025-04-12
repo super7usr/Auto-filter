@@ -137,15 +137,7 @@ async def start_cmd_for_web(client, message):
         return
 
     # Try to get settings, handle potential format errors
-    try:
-        settings = await get_settings(int(mc.split("_", 2)[1]))
-    except (IndexError, ValueError):
-        btn = [[
-            InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
-        ]]
-        await message.reply(f"Invalid file link format. Use file_GROUP_ID_FILE_ID format.", reply_markup=InlineKeyboardMarkup(btn))
-        return
-
+    settings = await get_settings(int(mc.split("_", 2)[1]))
     if settings['fsub']:
         btn = await is_subscribed(client, message, settings['fsub'])
         if btn:
@@ -159,7 +151,7 @@ async def start_cmd_for_web(client, message):
                 reply_markup=reply_markup,
                 parse_mode=enums.ParseMode.HTML
             )
-            return 
+            return  
 
     if mc.startswith('all'):
         _, grp_id, key = mc.split("_", 2)
@@ -212,109 +204,7 @@ async def start_cmd_for_web(client, message):
         )
         await vp.edit("The File has been gone ! Click given button to get it again.", reply_markup=InlineKeyboardMarkup(buttons))
         return
-
-    if mc.startswith('file'):
-         _, grp_id, key = mc.split("_", 2)
-         try:
-             group_id = int(grp_id)
-             grp_id = grp_id
-             type_ = 'file'
-         except ValueError:
-             btn = [[
-                 InlineKeyboardButton("Search Files", url=URL)
-             ]]
-             await message.reply(f"Invalid group ID in link. Must be numeric for standard group links.\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
-             return
-    elif mc.startswith('shortlink'):
-        # Handle shortlink format - simplified to always use default group
-        try:
-            parts = mc.split("_", 1)
-            if len(parts) != 2:
-                return await message.reply('Invalid shortlink format!')
-
-            file_id = parts[1]
-            grp_id = "1"  # Always use default group
-            settings = await get_settings(int(grp_id))
-            type_ = 'shortlink'
-        except Exception as e:
-            btn = [[
-                InlineKeyboardButton("Search Files", url=URL)
-            ]]
-            await message.reply(f"Error processing shortlink: {str(e)}\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
-            return
-    else:
-        # For any other format, check if we're dealing with a file ID directly
-        try:
-            # Check if the mc contains a valid file ID that doesn't match our format patterns
-            files_ = await get_file_details(mc)
-            if files_:
-                files = files_[0]
-                file_id = files.file_id
-                grp_id = "1"  # Use default group
-                settings = await get_settings(int(grp_id))
-                type_ = 'direct'
-            else:
-                # Unknown parameter
-                btn = [[
-                    InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
-                ]]
-                await message.reply(f"I found this start parameter (`{mc}`) but couldn't find any matching file. Please search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
-                return
-        except Exception as e:
-            btn = [[
-                InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
-            ]]
-            await message.reply(f"Error processing your request: `{str(e)}`\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
-            return
-
-    if type_ != 'shortlink' and settings['shortlink']:
-        link = await get_shortlink(settings['url'], settings['api'], f"https://t.me/{temp.U_NAME}?start=shortlink_{file_id}")
-        btn = [[
-            InlineKeyboardButton("♻️ Get File ♻️", url=link)
-        ],[
-            InlineKeyboardButton("📍 how to open link 📍", url=settings['tutorial'])
-        ]]
-        await message.reply(f"[{get_size(files.file_size)}] {files.file_name}\n\nYour file is ready, Please get using this link. 👍", reply_markup=InlineKeyboardMarkup(btn), protect_content=True)
-        return
-
-    CAPTION = settings['caption']
-    f_caption = CAPTION.format(
-        file_name = files.file_name,
-        file_size = get_size(files.file_size),
-        file_caption=files.caption
-    )
-    if settings.get('is_stream', IS_STREAM):
-        btn = [[
-            InlineKeyboardButton("✛ watch & download ✛", callback_data=f"stream#{file_id}")
-        ],[
-            InlineKeyboardButton('⚡️ Updates', url=UPDATES_LINK),
-            InlineKeyboardButton('💡 Support', url=SUPPORT_LINK)
-        ],[
-            InlineKeyboardButton('⁉️ close ⁉️', callback_data='close_data')
-        ]]
-    else:
-        btn = [[
-            InlineKeyboardButton('⚡️ Updates', url=UPDATES_LINK),
-            InlineKeyboardButton('💡 Support', url=SUPPORT_LINK)
-        ],[
-            InlineKeyboardButton('⁉️ close ⁉️', callback_data='close_data')
-        ]]
-    vp = await client.send_cached_media(
-        chat_id=message.from_user.id,
-        file_id=file_id,
-        caption=f_caption,
-        protect_content=False,
-        reply_markup=InlineKeyboardMarkup(btn)
-    )
-    time = get_readable_time(PM_FILE_DELETE_TIME)
-    msg = await vp.reply(f"Note: This message will be delete in {time} to avoid copyrights. Save the File to somewhere else")
-    await asyncio.sleep(PM_FILE_DELETE_TIME)
-    btns = [[
-        InlineKeyboardButton('get File again', callback_data=f"get_del_file#{grp_id}#{file_id}")
-    ]]
-    await msg.delete()
-    await vp.delete()
-    await vp.reply("The File has been gone ! Click given button to get it again.", reply_markup=InlineKeyboardMarkup(btns))
+      
 
 @Client.on_message(filters.command('index_channels'))
 async def channels_info(bot, message):
