@@ -101,9 +101,9 @@ DATABASE_NAME = environ.get('DATABASE_NAME', "Cluster0")
 COLLECTION_NAME = environ.get('COLLECTION_NAME', 'Files')
 
 # Links
-SUPPORT_LINK = environ.get('SUPPORT_LINK', 'https://t.me/')
-UPDATES_LINK = environ.get('UPDATES_LINK', 'https://t.me/')
-FILMS_LINK = environ.get('FILMS_LINK', 'https://t.me/')
+SUPPORT_LINK = environ.get('SUPPORT_LINK', 'https://t.me/renish_rgi_bot')
+UPDATES_LINK = environ.get('UPDATES_LINK', 'https://t.me/M0VIES_CHANNEL')
+FILMS_LINK = environ.get('FILMS_LINK', 'https://movies.koyeb.app/')
 TUTORIAL = environ.get("TUTORIAL", "https://t.me/")
 VERIFY_TUTORIAL = environ.get("VERIFY_TUTORIAL", "https://t.me/")
 
