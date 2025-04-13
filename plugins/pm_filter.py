@@ -823,10 +823,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
     elif query.data == "about":
         buttons = [[
-            InlineKeyboardButton('📊 status 📊', callback_data='stats'),
-            InlineKeyboardButton('🤖 source code 🤖', callback_data='source')
-        ],[
-            InlineKeyboardButton('👑 bot owner', callback_data='owner')
+            InlineKeyboardButton('❁✗❍═❰ 🆁︎🅴︎🅽︎🅸︎🆂︎🅷︎ ❱═❍✗❁', url='https://t.me/renish_rgi')
         ],[
             InlineKeyboardButton('⬅️ Back', callback_data='start')
         ]]
@@ -857,22 +854,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
             InlineKeyboardButton('« Back', callback_data='about')
         ]]
         await query.message.edit_text(script.STATUS_TXT.format(files, users, chats, used_size, free_size, secnd_used_size, secnd_free_size, uptime), reply_markup=InlineKeyboardMarkup(buttons)
-        )
-
-    elif query.data == "owner":
-        buttons = [[
-            InlineKeyboardButton(text=f"☎️ contact - {(await client.get_users(admin)).first_name}", user_id=admin)
-        ]
-            for admin in ADMINS
-        ]
-        buttons.append(
-            [InlineKeyboardButton('« Back', callback_data='about')]
-        )
-        reply_markup = InlineKeyboardMarkup(buttons)
-        await query.message.edit_text(
-            text=script.MY_OWNER_TXT,
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
         )
 
     elif query.data == "earn":
@@ -936,17 +917,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
         await query.message.edit_text(
             text=script.ADMIN_COMMAND_TXT,
             reply_markup=reply_markup
-        )
-
-    elif query.data == "source":
-        buttons = [[
-            InlineKeyboardButton('≼ Back', callback_data='about')
-        ]]
-        reply_markup = InlineKeyboardMarkup(buttons)
-        await query.message.edit_text(
-            text=script.SOURCE_TXT,
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
         )
 
     elif query.data.startswith("setgs"):
