@@ -226,11 +226,11 @@ def get_wish():
     time = datetime.now(TIME_ZONE)
     now = time.strftime("%H")
     if now < "12":
-        status = "ɢᴏᴏᴅ ᴍᴏʀɴɪɴɢ 🌞"
+        status = "good morning 🌞"
     elif now < "18":
-        status = "ɢᴏᴏᴅ ᴀꜰᴛᴇʀɴᴏᴏɴ 🌗"
+        status = "Good afternoon 🌗"
     else:
-        status = "ɢᴏᴏᴅ ᴇᴠᴇɴɪɴɢ 🌘"
+        status = "Good evening 🌘"
     return status
     
 async def get_seconds(time_string):
