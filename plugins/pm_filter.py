@@ -1172,7 +1172,7 @@ async def auto_filter(client, msg, s, spoll=False):
     if settings['links']:
         btn = []
         for file_num, file in enumerate(files, start=1):
-            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
+            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_1_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
     else:
         btn = [[
             InlineKeyboardButton(text=f"📂 {get_size(file.file_size)} {file.file_name}", callback_data=f'file#{file.file_id}')
@@ -1182,7 +1182,7 @@ async def auto_filter(client, msg, s, spoll=False):
 
     # Add web search button for all results
     if search_query:
-        web_search_url = f"{URL}/movie?q={search_query}"
+        web_search_url = f"{URL}movie?q={search_query}"
         btn.append([
             InlineKeyboardButton("🌐 Web Search", url=web_search_url),
             InlineKeyboardButton("🎬 IMDB", url=f"https://www.imdb.com/find?q={search_query}")
@@ -1194,16 +1194,10 @@ async def auto_filter(client, msg, s, spoll=False):
                 [InlineKeyboardButton("📰 Languages", callback_data=f"languages#{key}#{req}#{offset}"),
                  InlineKeyboardButton("🔍 Quality", callback_data=f"quality#{key}#{req}#{offset}")]
             )
-            btn.insert(2,
-                [InlineKeyboardButton("♻️ Send All ♻️", url=await get_shortlink(settings['url'], settings['api'], f'https://t.me/{temp.U_NAME}?start=all_{message.chat.id}_{key}'))]
-            )
         else:
             btn.insert(1,
                 [InlineKeyboardButton("📰 Languages", callback_data=f"languages#{key}#{req}#{offset}"),
                  InlineKeyboardButton("🔍 Quality", callback_data=f"quality#{key}#{req}#{offset}")]
-            )
-            btn.insert(2,
-                [InlineKeyboardButton("♻️ Send All ♻️", callback_data=f"send_all#{key}#{req}")]
             )
         btn.append(
             [InlineKeyboardButton(text=f"1/{math.ceil(int(total_results) / MAX_BTN)}", callback_data="buttons"),
