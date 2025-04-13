@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Series Bot - Premium Streaming Service</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap">
+    <style>
+        :root {
+            --primary-dark: #0a0e17;
+            --primary-bg: #031633;
+            --theme-blue: #0066cc;
+            --theme-blue-hover: #0055b3;
+            --accent-color: #0066cc;
+            --text-color: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --card-bg: rgba(15, 23, 42, 0.6);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-hover: rgba(17, 25, 45, 0.9);
+            --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --cta-gradient: linear-gradient(90deg, #0066cc, #0055b3);
+            --header-height: 70px;
+            --content-max-width: 1800px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--primary-bg);
+            background-image: url('/imgs/img1.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(10, 14, 23, 0.9) 0%,
+                rgba(10, 14, 23, 0.8) 30%,
+                rgba(10, 14, 23, 0.7) 60%,
+                rgba(10, 14, 23, 0.95) 100%
+            );
+            z-index: -1;
+        }
+        
+        /* Header Section */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+            z-index: 100;
+            transition: background-color 0.3s ease;
+        }
+        
+        header.scrolled {
+            background-color: var(--primary-dark);
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--theme-blue);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            font-size: 26px;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .search-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .search-toggle:hover {
+            color: var(--theme-blue);
+            transform: scale(1.1);
+        }
+        
+        .login-btn {
+            background: var(--theme-blue);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .login-btn:hover {
+            background: var(--theme-blue-hover);
+            transform: translateY(-2px);
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            height: 80vh;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            position: relative;
+            margin-top: var(--header-height);
+        }
+        
+        .hero-content {
+            max-width: 700px;
+            z-index: 2;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.4;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+        
+        .hero-cta {
+            display: inline-block;
+            background: var(--cta-gradient);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 102, 204, 0.4);
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .hero-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.6);
+            background: linear-gradient(90deg, #0066cc, #004999);
+            color: white;
+        }
+        
+        .hero-cta i {
+            margin-right: 10px;
+        }
+        
+        /* Hero Search Bar */
+        .hero-search-container {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .hero-search-form {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .hero-search-input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            outline: none;
+        }
+        
+        .hero-search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .hero-search-button {
+            background: var(--theme-blue);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .hero-search-button:hover {
+            background: var(--theme-blue-hover);
+        }
+        
+        /* Search Bar that appears on toggle */
+        .search-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background-color: rgba(10, 14, 23, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 40px;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+            z-index: 101;
+        }
+        
+        .search-container.active {
+            transform: translateY(0);
+        }
+        
+        .search-form {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            position: relative;
+        }
+        
+        .search-input {
+            flex-grow: 1;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 4px 0 0 4px;
+            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-right: none;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .search-button {
+            background: var(--theme-blue);
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            padding: 0 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .search-button:hover {
+            background: var(--theme-blue-hover);
+        }
+        
+        .search-close {
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        /* Categories Section */
+        .categories-section {
+            padding: 60px 40px;
+            max-width: var(--content-max-width);
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 5px;
+            height: 70%;
+            background: var(--theme-blue);
+            border-radius: 2px;
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .category-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            height: 150px;
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            background: var(--card-hover);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border-color: rgba(229, 9, 20, 0.3);
+        }
+        
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.1) 0%,
+                rgba(0, 0, 0, 0.5) 70%,
+                rgba(0, 0, 0, 0.8) 100%
+            );
+            z-index: 1;
+        }
+        
+        .category-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        
+        .category-card:hover .category-bg {
+            transform: scale(1.1);
+            opacity: 0.9;
+        }
+        
+        .category-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            z-index: 2;
+        }
+        
+        .category-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .category-count {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Features Section */
+        .features-section {
+            background: linear-gradient(to right, rgba(10, 14, 23, 0.8), rgba(15, 23, 42, 0.8));
+            padding: 80px 40px;
+        }
+        
+        .features-container {
+            max-width: var(--content-max-width);
+            margin: 0 auto;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            padding: 30px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: var(--card-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--theme-blue);
+            margin-bottom: 20px;
+        }
+        
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 40px;
+            background: radial-gradient(circle, rgba(20, 30, 48, 0.8) 0%, rgba(10, 14, 23, 0.9) 100%);
+            text-align: center;
+        }
+        
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .cta-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .cta-btn-primary {
+            background: var(--cta-gradient);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 102, 204, 0.4);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cta-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.6);
+            background: linear-gradient(90deg, #0066cc, #004999);
+            color: white;
+        }
+        
+        .cta-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cta-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            color: white;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--primary-dark);
+            padding: 50px 40px 30px;
+            color: var(--text-secondary);
+        }
+        
+        .footer-container {
+            max-width: var(--content-max-width);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+        }
+        
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .footer-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--theme-blue);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .footer-logo i {
+            margin-right: 10px;
+        }
+        
+        .footer-about {
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .social-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background: var(--theme-blue);
+            transform: translateY(-3px);
+        }
+        
+        .footer-nav h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .footer-links a::before {
+            content: '›';
+            position: absolute;
+            left: 0;
+            transition: transform 0.2s ease;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .footer-links a:hover::before {
+            transform: translateX(3px);
+            color: var(--theme-blue);
+        }
+        
+        .footer-contact p {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .footer-contact i {
+            color: var(--theme-blue);
+            font-size: 16px;
+        }
+        
+        .copyright {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        /* Animation Classes */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.3rem;
+            }
+            
+            .categories-section,
+            .features-section,
+            .cta-section,
+            footer {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 0 20px;
+            }
+            
+            .hero-section {
+                padding: 0 20px;
+                height: 70vh;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .hero-cta {
+                padding: 12px 25px;
+                font-size: 1.1rem;
+            }
+            
+            .categories-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-title {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo span {
+                display: none;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .footer-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header id="header">
+        <div class="logo-container">
+            <a href="/" class="logo">
+                <i class="fas fa-film"></i>
+                <span>MovieBot</span>
+            </a>
+        </div>
+        <div class="header-actions">
+            <button id="search-toggle" class="search-toggle">
+                <i class="fas fa-search"></i>
+            </button>
+            <a href="https://t.me/NEW_OLD_MOVIE_SERIES_bot" class="login-btn">
+                <i class="fab fa-telegram"></i> Use Bot
+            </a>
+        </div>
+    </header>
+    
+    <div id="search-container" class="search-container">
+        <form action="/movie" method="get" class="search-form">
+            <input type="text" name="q" placeholder="Search for movies, series, or shows..." class="search-input" required>
+            <button type="submit" class="search-button">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+        <button id="search-close" class="search-close">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Unlimited Movies, TV Shows, and More.</h1>
+            <p class="hero-subtitle">Watch anywhere. Cancel anytime. Search your favorite content directly from our Telegram bot.</p>
+            <a href="https://t.me/NEW_OLD_MOVIE_SERIES_bot" class="hero-cta">
+                <i class="fab fa-telegram"></i> Get Started
+            </a>
+            
+            <div class="hero-search-container">
+                <form action="/movie" method="get" class="hero-search-form">
+                    <input type="text" name="q" placeholder="Search for movies, series, shows..." class="hero-search-input" required>
+                    <button type="submit" class="hero-search-button">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+    
+    <section class="features-section">
+        <div class="features-container">
+            <h2 class="section-title">Why Choose Us</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-search feature-icon"></i>
+                    <h3 class="feature-title">Smart Filtering</h3>
+                    <p class="feature-description">Our intelligent search algorithm quickly finds exactly what you're looking for, with advanced filtering options.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bolt feature-icon"></i>
+                    <h3 class="feature-title">Instant Access</h3>
+                    <p class="feature-description">Get instant access to thousands of titles without long loading times or buffering issues.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt feature-icon"></i>
+                    <h3 class="feature-title">Secure Platform</h3>
+                    <p class="feature-description">Your privacy and security are our top priorities, with encrypted connections and anonymous access.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-desktop feature-icon"></i>
+                    <h3 class="feature-title">HD Streaming</h3>
+                    <p class="feature-description">Enjoy crystal clear HD quality streaming on all your devices with adaptive quality settings.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-download feature-icon"></i>
+                    <h3 class="feature-title">Easy Downloads</h3>
+                    <p class="feature-description">Download your favorite content with just a few clicks for offline viewing anytime, anywhere.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-clock feature-icon"></i>
+                    <h3 class="feature-title">24/7 Availability</h3>
+                    <p class="feature-description">Our platform never sleeps, providing round-the-clock access to all content whenever you want it.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2 class="cta-title">Ready to Start Watching?</h2>
+            <p class="cta-subtitle">Join millions of users who are already enjoying unlimited access to movies and TV shows. Start your journey today with our Telegram bot.</p>
+            <div class="cta-buttons">
+                <a href="https://t.me/NEW_OLD_MOVIE_SERIES_bot" class="cta-btn-primary">
+                    <i class="fab fa-telegram"></i> Start Watching Now
+                </a>
+                <a href="/movie" class="cta-btn-secondary">
+                    <i class="fas fa-search"></i> Browse Catalog
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="/" class="footer-logo">
+                    <i class="fas fa-film"></i> MovieBot
+                </a>
+                <p class="footer-about">
+                    The ultimate destination for movie and TV show enthusiasts, providing instant access to thousands of titles through our Telegram bot.
+                </p>
+                <div class="footer-social">
+                    <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-nav">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/movie">Movies</a></li>
+                    <li><a href="/tv">TV Shows</a></li>
+                    <li><a href="/new">New Releases</a></li>
+                    <li><a href="/trending">Trending</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-nav">
+                <h4>Categories</h4>
+                <ul class="footer-links">
+                    <li><a href="/genre/action">Action</a></li>
+                    <li><a href="/genre/comedy">Comedy</a></li>
+                    <li><a href="/genre/drama">Drama</a></li>
+                    <li><a href="/genre/horror">Horror</a></li>
+                    <li><a href="/genre/documentary">Documentary</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-contact">
+                <h4>Contact Us</h4>
+                <p><i class="fas fa-envelope"></i> support@moviebot.com</p>
+                <p><i class="fas fa-phone"></i> +1 (123) 456-7890</p>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Streaming St, Digital City</p>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; 2025 Movie Series Bot | All Rights Reserved | Powered by <a href="https://t.me/HA_Bots" style="color: var(--theme-blue);">HA Bots</a></p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Header scroll effect
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+            
+            // Search toggle functionality
+            const searchToggle = document.getElementById('search-toggle');
+            const searchContainer = document.getElementById('search-container');
+            const searchClose = document.getElementById('search-close');
+            
+            searchToggle.addEventListener('click', function() {
+                searchContainer.classList.add('active');
+                document.querySelector('.search-input').focus();
+            });
+            
+            searchClose.addEventListener('click', function() {
+                searchContainer.classList.remove('active');
+            });
+            
+            // Escape key to close search
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && searchContainer.classList.contains('active')) {
+                    searchContainer.classList.remove('active');
+                }
+            });
+            
+            // Create dynamic animated background elements
+            const createRandomParticle = () => {
+                const particle = document.createElement('div');
+                particle.classList.add('shooting-star');
+                
+                // Random positioning and timing
+                particle.style.top = `${Math.random() * 70}%`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.transform = `rotate(${45 + Math.random() * 15}deg)`;
+                particle.style.opacity = `${0.5 + Math.random() * 0.5}`;
+                particle.style.width = `${1 + Math.random() * 2}px`;
+                particle.style.height = `${50 + Math.random() * 100}px`;
+                
+                // Animation
+                particle.style.animation = `shootingStar ${1 + Math.random() * 2}s linear`;
+                
+                document.body.appendChild(particle);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    particle.remove();
+                }, 3000);
+            };
+            
+            // Add shooting stars periodically
+            setInterval(createRandomParticle, 3000);
+            
+            // Add styles for shooting stars
+            const styleSheet = document.createElement('style');
+            styleSheet.innerText = `
+                @keyframes shootingStar {
+                    0% {
+                        transform-origin: left top;
+                        transform: translateX(0) translateY(0) rotate(45deg);
+                        opacity: 0;
+                    }
+                    5% {
+                        opacity: 1;
+                    }
+                    70% {
+                        opacity: 1;
+                    }
+                    100% {
+                        transform-origin: left top;
+                        transform: translateX(1000px) translateY(1000px) rotate(45deg);
+                        opacity: 0;
+                    }
+                }
+                
+                .shooting-star {
+                    position: fixed;
+                    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff);
+                    z-index: -1;
+                    pointer-events: none;
+                }
+            `;
+            document.head.appendChild(styleSheet);
+        });
+    </script>
+</body>
+</html>

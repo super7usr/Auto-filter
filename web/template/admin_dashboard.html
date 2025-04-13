@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Telegram Auto-Filter Bot</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(45deg, #091634, #0f3460, #164e87);
+            --secondary-gradient: linear-gradient(135deg, #00c6ff, #0072ff);
+            --accent-gradient: linear-gradient(45deg, #00c6ff, #92dfff);
+            --card-bg: rgba(9, 22, 52, 0.85);
+            --text-glow: 0 0 10px rgba(0, 198, 255, 0.7);
+            --card-glow: 0 0 25px rgba(0, 114, 255, 0.6);
+            --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #091634;
+            color: var(--bs-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-menu-link:hover, .sidebar-menu-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left-color: #00c6ff;
+        }
+        
+        .sidebar-menu-icon {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .dashboard-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-glow);
+        }
+        
+        .stat-title {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stat-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-comparison {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .stat-up {
+            color: #4ade80;
+        }
+        
+        .stat-down {
+            color: #f87171;
+        }
+        
+        .recent-activity {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-right: 1rem;
+            font-size: 1.25rem;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .activity-description {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .action-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .action-btn-primary {
+            background: linear-gradient(45deg, #0072ff, #00c6ff);
+            border: none;
+        }
+        
+        .action-btn-primary:hover {
+            background: linear-gradient(45deg, #0066e8, #00b4f0);
+        }
+        
+        .action-btn-danger {
+            background: linear-gradient(45deg, #f43f5e, #ef4444);
+            border: none;
+        }
+        
+        .action-btn-danger:hover {
+            background: linear-gradient(45deg, #e11d48, #dc2626);
+        }
+        
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+            height: 300px;
+        }
+        
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .toggle-sidebar {
+                display: block;
+            }
+        }
+        
+        /* Toggle button */
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: none;
+        }
+        
+        /* Logout button */
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            margin: 1.5rem;
+            margin-top: auto;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+        
+        /* System status indicator */
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            position: relative;
+        }
+        
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(74, 222, 128, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        .status-text {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="admin-title">Admin Dashboard</h2>
+            <p class="admin-subtitle">Telegram Auto-Filter Bot</p>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="/admin" class="sidebar-menu-link active">
+                    <i class="fas fa-tachometer-alt sidebar-menu-icon"></i>
+                    Overview
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/users" class="sidebar-menu-link">
+                    <i class="fas fa-users sidebar-menu-icon"></i>
+                    Users
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/files" class="sidebar-menu-link">
+                    <i class="fas fa-file-alt sidebar-menu-icon"></i>
+                    Files
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/chats" class="sidebar-menu-link">
+                    <i class="fas fa-comments sidebar-menu-icon"></i>
+                    Chats
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/logs" class="sidebar-menu-link">
+                    <i class="fas fa-list-alt sidebar-menu-icon"></i>
+                    Logs
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/settings" class="sidebar-menu-link">
+                    <i class="fas fa-cog sidebar-menu-icon"></i>
+                    Settings
+                </a>
+            </li>
+        </ul>
+        
+        <div class="system-status">
+            <span class="status-indicator"></span>
+            <span class="status-text">System Online</span>
+        </div>
+        
+        <a href="/admin/logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </a>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="dashboard-header">
+            <button class="toggle-sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="dashboard-title">Dashboard Overview</h1>
+            <div>
+                <span id="current-date"></span>
+            </div>
+        </header>
+        
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-title">
+                    <span class="stat-icon"><i class="fas fa-users"></i></span>
+                    Total Users
+                </div>
+                <div class="stat-value">{{ total_users }}</div>
+                <div class="stat-comparison stat-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>{{ user_percent_increase }}% from last week</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">
+                    <span class="stat-icon"><i class="fas fa-comments"></i></span>
+                    Total Chats
+                </div>
+                <div class="stat-value">{{ total_chats }}</div>
+                <div class="stat-comparison stat-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>{{ chat_percent_increase }}% from last week</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">
+                    <span class="stat-icon"><i class="fas fa-file-alt"></i></span>
+                    Indexed Files
+                </div>
+                <div class="stat-value">{{ total_files }}</div>
+                <div class="stat-comparison stat-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>{{ file_percent_increase }}% from last week</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">
+                    <span class="stat-icon"><i class="fas fa-search"></i></span>
+                    Daily Searches
+                </div>
+                <div class="stat-value">{{ daily_searches }}</div>
+                <div class="stat-comparison stat-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>{{ search_percent_increase }}% from yesterday</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="recent-activity">
+            <div class="section-header">
+                <h3 class="section-title">Quick Actions</h3>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="/admin/broadcast" class="action-btn action-btn-primary">
+                    <i class="fas fa-bullhorn"></i>
+                    Broadcast Message
+                </a>
+                <a href="/admin/index" class="action-btn">
+                    <i class="fas fa-sync-alt"></i>
+                    Index Files
+                </a>
+                <a href="/admin/backup" class="action-btn">
+                    <i class="fas fa-database"></i>
+                    Create Backup
+                </a>
+                <a href="/admin/restart" class="action-btn action-btn-danger">
+                    <i class="fas fa-power-off"></i>
+                    Restart Bot
+                </a>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <div class="section-header">
+                <h3 class="section-title">Recent Activity</h3>
+                <a href="/admin/logs" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            
+            <ul class="activity-list">
+                {% for activity in activities %}
+                <li class="activity-item">
+                    <div class="activity-icon" style="background-color: {{ activity.iconBg }}; color: {{ activity.iconColor }};">
+                        <i class="{{ activity.icon }}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h4 class="activity-title">{{ activity.title }}</h4>
+                        <p class="activity-description">{{ activity.description }}</p>
+                        <span class="activity-time">{{ activity.time }}</span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </main>
+    
+    <script>
+        // Set current date
+        const date = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = date.toLocaleDateString('en-US', options);
+        
+        // Mobile sidebar toggle
+        document.querySelector('.toggle-sidebar').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        });
+    </script>
+</body>
+</html>

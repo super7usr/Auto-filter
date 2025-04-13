@@ -52,13 +52,13 @@
   .cybr-btn {
     --primary: hsl(var(--primary-hue), 85%, calc(var(--primary-lightness, 50) * 1%));
     --shadow-primary: hsl(var(--shadow-primary-hue), 90%, 50%);
-    --primary-hue: 0;
+    --primary-hue: 210;
     --primary-lightness: 50;
     --color: hsl(0, 0%, 100%);
     --font-size: 26px;
-    --shadow-primary-hue: 180;
+    --shadow-primary-hue: 210;
     --label-size: 9px;
-    --shadow-secondary-hue: 60;
+    --shadow-secondary-hue: 210;
     --shadow-secondary: hsl(var(--shadow-secondary-hue), 90%, 60%);
     --clip: polygon(0 0, 100% 0, 100% 100%, 95% 100%, 95% 90%, 85% 90%, 85% 100%, 8% 100%, 0 70%);
     --border: 4px;
@@ -230,8 +230,8 @@
     --footer-icon-color:var(--footer-font-color);
     --player-border-color: #d3e0ea;
     --player-hover-color: var(--footer-color);
-    --player-border-hover-color: red;
-    --plyr-color-main: red;
+    --player-border-hover-color: #0066cc;
+    --plyr-color-main: #0066cc;
     transition: 0.3s;
 }
 
@@ -399,5 +399,5 @@ svg:hover {
 }
 
 .plyr__menu__container .plyr__control[role=menuitemradio][aria-checked=true]::before {
-    background: violet;
+    background: #0066cc;
 }

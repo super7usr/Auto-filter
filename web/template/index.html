@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Series Bot - Media Streaming Server</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(45deg, #0f2027, #203a43, #2c5364);
+            --secondary-gradient: linear-gradient(135deg, #8a2387, #e94057, #f27121);
+            --accent-gradient: linear-gradient(45deg, #4776E6, #8E54E9);
+            --card-bg: rgba(25, 25, 30, 0.85);
+            --text-glow: 0 0 10px rgba(255, 255, 255, 0.7);
+            --card-glow: 0 0 25px rgba(142, 84, 233, 0.8);
+            --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #0a0a12;
+            background-image: url('/imgs/img1.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: var(--bs-light);
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(15, 32, 39, 0.9), 
+                rgba(32, 58, 67, 0.8), 
+                rgba(44, 83, 100, 0.7));
+            z-index: -1;
+        }
+        
+        /* Animated particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 15s linear infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-1000px) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1000px;
+            text-align: center;
+            padding: 2.5rem;
+            z-index: 1;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-container {
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+        
+        .logo-backdrop {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -70%);
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            filter: blur(20px);
+            opacity: 0.6;
+            z-index: -1;
+            animation: pulse 3s infinite;
+        }
+
+        .logo-icon {
+            font-size: 6rem;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            animation: pulse 3s infinite;
+            text-shadow: var(--text-glow);
+            filter: drop-shadow(0 0 10px rgba(255, 114, 94, 0.5));
+            position: relative;
+        }
+        
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 10px;
+            bottom: -10px;
+            left: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.08); filter: brightness(1.2); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+
+        .bot-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: var(--text-glow);
+            position: relative;
+            display: inline-block;
+            letter-spacing: 2px;
+            animation: textShadowPulse 3s infinite;
+        }
+        
+        @keyframes textShadowPulse {
+            0% {
+                text-shadow: 0 0 5px rgba(142, 84, 233, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 15px rgba(233, 64, 87, 0.8), 0 0 30px rgba(242, 113, 33, 0.4);
+            }
+            100% {
+                text-shadow: 0 0 5px rgba(142, 84, 233, 0.5);
+            }
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2.5rem;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 400;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 1.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease;
+            transform: translateY(0);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            box-shadow: var(--card-glow);
+            transform: translateY(-5px);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(30deg);
+            animation: shimmer 7s infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-150%) rotate(30deg); }
+            100% { transform: translateX(150%) rotate(30deg); }
+        }
+
+        .feature-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .feature-item {
+            flex: 1 1 250px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: flex-start;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+        
+        .feature-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 50%, 
+                rgba(255, 255, 255, 0) 100%);
+            z-index: -1;
+        }
+
+        .feature-icon {
+            font-size: 1.8rem;
+            margin-right: 1rem;
+            color: #ffaf7b;
+            filter: drop-shadow(0 0 5px rgba(255, 175, 123, 0.5));
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-item:hover .feature-icon {
+            transform: scale(1.2) rotate(15deg);
+        }
+
+        .feature-text h4 {
+            margin-top: 0;
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .feature-text h4::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -3px;
+            left: 0;
+            background: var(--secondary-gradient);
+            transition: width 0.3s ease;
+        }
+        
+        .feature-item:hover .feature-text h4::after {
+            width: 100%;
+        }
+
+        .feature-text p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .search-form {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .search-form:focus-within {
+            box-shadow: 0 4px 20px rgba(142, 84, 233, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .search-input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-button {
+            background: linear-gradient(45deg, #0088cc, #00aaff);
+            border: none;
+            border-radius: 30px;
+            padding: 10px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .search-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(30deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        
+        .search-button:hover::before {
+            opacity: 1;
+            animation: shimmer 1s;
+        }
+
+        .search-button:hover {
+            background: linear-gradient(45deg, #007bb8, #0099e6);
+            transform: scale(1.05);
+        }
+
+        .btn-telegram {
+            background: linear-gradient(45deg, #0088cc, #00aaff);
+            border: none;
+            border-radius: 30px;
+            padding: 0.8rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-telegram::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(30deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        
+        .btn-telegram:hover::before {
+            opacity: 1;
+            animation: shimmer 1s;
+        }
+
+        .btn-telegram:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 136, 204, 0.6);
+            background: linear-gradient(45deg, #0077b3, #0099e6);
+            color: white;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            text-align: center;
+        }
+
+        .footer-text {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Shooting star animation */
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 80px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff);
+            animation: shooting 1s ease-in-out;
+            transform: rotate(45deg);
+            z-index: -1;
+        }
+        
+        @keyframes shooting {
+            0% {
+                transform: translateX(0) translateY(0) rotate(45deg);
+                opacity: 1;
+                height: 5px;
+            }
+            100% {
+                transform: translateX(300px) translateY(300px) rotate(45deg);
+                opacity: 0;
+                height: 80px;
+            }
+        }
+        
+        /* Spotlight effect */
+        .spotlight {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at var(--x) var(--y), 
+                                       rgba(255, 255, 255, 0.15), 
+                                       rgba(255, 255, 255, 0) 50%);
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @media (max-width: 768px) {
+            .bot-title {
+                font-size: 2.5rem;
+            }
+            .feature-list {
+                flex-direction: column;
+                align-items: center;
+            }
+            .feature-item {
+                width: 100%;
+            }
+        }
+    </style>
+    <script>
+        // Create animated particles when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create spotlight effect
+            const spotlight = document.createElement('div');
+            spotlight.className = 'spotlight';
+            document.body.appendChild(spotlight);
+            
+            document.addEventListener('mousemove', e => {
+                const { clientX, clientY } = e;
+                const x = (clientX / window.innerWidth) * 100;
+                const y = (clientY / window.innerHeight) * 100;
+                spotlight.style.setProperty('--x', `${x}%`);
+                spotlight.style.setProperty('--y', `${y}%`);
+            });
+            
+            // Create particles
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random position
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = Math.random() * 100 + 'vh';
+                
+                // Random size
+                const size = Math.random() * 6 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                // Random animation duration
+                const duration = Math.random() * 20 + 10;
+                particle.style.animationDuration = duration + 's';
+                
+                // Random delay
+                const delay = Math.random() * 10;
+                particle.style.animationDelay = delay + 's';
+                
+                document.body.appendChild(particle);
+            }
+            
+            // Add shooting stars effect
+            setInterval(() => {
+                const star = document.createElement('div');
+                star.className = 'shooting-star';
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.top = Math.random() * 30 + 'vh';
+                document.body.appendChild(star);
+                
+                setTimeout(() => {
+                    star.remove();
+                }, 1000);
+            }, 2000);
+            
+            // Add 3D tilt effect on feature items
+            const cards = document.querySelectorAll('.feature-item');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', function(e) {
+                    const rect = this.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const tiltX = (y - centerY) / 10;
+                    const tiltY = (centerX - x) / 10;
+                    
+                    this.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.05, 1.05, 1.05)`;
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <div class="logo-backdrop"></div>
+            <i class="fas fa-film logo-icon"></i>
+            <h1 class="bot-title">Movie Series Bot</h1>
+            <p class="subtitle">Your ultimate media streaming companion</p>
+        </div>
+
+        <div class="search-container">
+            <form action="/movie" method="get" class="search-form">
+                <input type="text" name="q" placeholder="Search for movies, series, or shows..." class="search-input" required>
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fas fa-search feature-icon"></i>
+                    <div class="feature-text">
+                        <h4>Smart Filtering</h4>
+                        <p>Advanced auto-filtering system to quickly find the content you're looking for.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-play-circle feature-icon"></i>
+                    <div class="feature-text">
+                        <h4>HD Streaming</h4>
+                        <p>High-quality streaming experience with our optimized media player.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-download feature-icon"></i>
+                    <div class="feature-text">
+                        <h4>Easy Downloads</h4>
+                        <p>Download your favorite content with just a few clicks.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-bolt feature-icon"></i>
+                    <div class="feature-text">
+                        <h4>Lightning Fast</h4>
+                        <p>Optimized for speed and performance with minimal loading times.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 justify-content-center">
+                <a href="https://t.me/NEW_OLD_MOVIE_SERIES_bot" class="btn-telegram">
+                    <i class="fab fa-telegram-plane"></i> Use our Telegram Bot
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p class="footer-text">© 2025 Movie Series Bot | All Rights Reserved</p>
+        </div>
+    </div>
+</body>
+</html>
