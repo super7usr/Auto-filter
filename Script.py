@@ -3,9 +3,9 @@ class script(object):
 
     START_TXT = """<b>👋 Hey {}, 
 
-🤖 I'm <span class="highlight">Auto Filter with Link Shortener</span> bot!
+🤖 I'm <span class="highlight">Auto Filter advance</span> bot!
 
-💯 Add me to your group as admin and I'll provide movies with your custom shortened links!
+💯 Add me to your group as admin and I'll provide movies!
 
 🌟 Enjoy premium features and earn while sharing content!</b>"""
 
@@ -16,13 +16,6 @@ class script(object):
 <b>🔹 Language:</b> <a href=https://www.python.org><b>Python</b></a>
 <b>🔹 Library:</b> <a href=https://pyrogram.org><b>Pyrogram</b></a>
 <b>🔹 Build Status:</b> <code>v2.5.1 [Stable]</code>"""
-
-    MY_OWNER_TXT = """<b>👑 <u>Bot Owner Information</u> 👑</b>
-
-<b>🔸 Name:</b> <code>HA Bots</code>
-<b>🔸 Username:</b> @HA_Bots
-<b>🔸 Country:</b> <code>Sri Lanka 🇱🇰</code>
-<b>🔸 Experience:</b> <code>Chatbot & Automation</code>"""
 
     STATUS_TXT = """<b>📊 <u>Bot Status</u> 📊</b>
 
