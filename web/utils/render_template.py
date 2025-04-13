@@ -12,12 +12,13 @@ async def media_watch(message_id):
     
     # Build the watch URL format
     stream_url = f"{URL}watch/{message_id}"
+    download_url = f"{URL}download/{message_id}/{file_name}"
     
     tag = mime_type.split('/')[0].strip()
     if tag == 'video':
-        async with aiofiles.open('web/template/watch.html') as r:
+        async with aiofiles.open('web/template/watch_new.html') as r:
             heading = 'Watch - {}'.format(file_name)
-            html = (await r.read()).replace('tag', tag) % (heading, file_name, stream_url)
+            html = (await r.read()).replace('tag', tag) % (heading, stream_url, file_name, download_url)
     else:
         html = '<h1>This is not a streamable file</h1>'
     return html
