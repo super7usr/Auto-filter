@@ -106,19 +106,6 @@ async def start_cmd_for_web(client, message):
 
     mc = message.command[1]
 
-    if mc.startswith('file'):
-        _, grp_id, key = mc.split("_", 2)
-        try:
-            group_id = int(grp_id)
-            grp_id = grp_id
-            type_ = 'file'
-        except ValueError:
-            btn = [[
-                InlineKeyboardButton("Search Files", url=URL)
-            ]]
-            await message.reply(f"Invalid group ID in link. Must be numeric for standard group links.\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
-            return
-
     if mc.startswith('verify'):
         _, token = mc.split("_", 1)
         verify_status = await get_verify_status(message.from_user.id)
@@ -217,6 +204,155 @@ async def start_cmd_for_web(client, message):
         )
         await vp.edit("The File has been gone ! Click given button to get it again.", reply_markup=InlineKeyboardMarkup(buttons))
         return
+
+
+    # Handle file links with different formats (file_GROUP_ID_FILE_ID, file_pm_FILE_ID, file_web_FILE_ID)
+    if mc.startswith('file'):
+        parts = mc.split("_", 2)
+        # This is a standardized way to handle all file link formats
+        try:
+            if len(parts) < 3:
+                # Invalid format
+                btn = [[
+                    InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+                ]]
+                await message.reply(f"Invalid file link format. Use file_GROUP_ID_FILE_ID format.\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+                return
+            link_type = parts[1]
+            file_id = parts[2]
+            
+            # Special handling for PM and web
+            if link_type == "pm" or link_type == "web":
+                # Use default group ID 1927155351 for PM and web links
+                file_id = parts[2]
+                group_id = str(1927155351)  # Your default group ID
+                type_ = f"{link_type}_file"
+            else:
+                # Standard format: file_GROUP_ID_FILE_ID
+                try:
+                    group_id = int(link_type)
+                    file_id = 'file'
+                except ValueError:
+                    btn = [[
+                        InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+                    ]]
+                    await message.reply(f"Invalid group ID in link. Must be numeric.\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+                    return # Failed to split into 3 parts
+
+            if len(parts) >= 3:
+                link_type = parts[1]
+                file_id = parts[2]
+
+                # Handle different file link formats
+                if link_type == 'pm' or link_type == '1927155351':
+                    # Handle PM-specific format for private messages
+                    grp_id = "1927155351"  # Use custom default group ID for PM
+                    type_ = 'pm_file'
+                elif link_type == 'web':
+                    # Handle web-specific format
+                    grp_id = "1927155351"  # Use custom default group ID for web
+                    type_ = 'web_file'
+                else:
+                    # Treat as regular group ID (original format)
+                    grp_id = link_type
+                    type_ = 'file'
+            else:
+                return await message.reply('Invalid file link format! Use file_GROUP_ID_FILE_ID, file_pm_FILE_ID, or file_web_FILE_ID')
+
+            files_ = await get_file_details(file_id)
+            if not files_:
+                return await message.reply('No such file exists!')
+            files = files_[0]
+            settings = await get_settings(int(grp_id))
+        except Exception as e:
+            return await message.reply(f'Error processing file: {str(e)}')
+    # Handle direct file IDs that don't follow our expected format
+    elif not any(mc.startswith(prefix) for prefix in ['verify', 'shortlink', 'all']):
+        try:
+            # Check if it's a valid file ID
+            
+            settings = await get_settings(int(grp_id))
+            type_ = 'shortlink'
+        except Exception as e:
+            btn = [[
+                InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+            ]]
+            await message.reply(f"Error processing shortlink: {str(e)}\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+            return
+    else:
+        # For any other format, check if we're dealing with a file ID directly
+        try:
+            # Check if the mc contains a valid file ID that doesn't match our format patterns
+            files_ = await get_file_details(mc)
+            if files_:
+                files = files_[0]
+                file_id = files.file_id
+                grp_id = "1"  # Use default group
+                settings = await get_settings(int(grp_id))
+                type_ = 'direct'
+            else:
+                # Unknown parameter
+                btn = [[
+                    InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+                ]]
+                await message.reply(f"I found this start parameter (`{mc}`) but couldn't find any matching file. Please search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+                return
+        except Exception as e:
+            btn = [[
+                InlineKeyboardButton("Search Files", switch_inline_query_current_chat='')
+            ]]
+            await message.reply(f"Error processing your request: `{str(e)}`\n\nYou can search for files using the button below:", reply_markup=InlineKeyboardMarkup(btn))
+            return
+
+    if type_ != 'shortlink' and settings['shortlink']:
+        link = await get_shortlink(settings['url'], settings['api'], f"https://t.me/{temp.U_NAME}?start=shortlink_{file_id}")
+        btn = [[
+            InlineKeyboardButton("♻️ Get File ♻️", url=link)
+        ],[
+            InlineKeyboardButton("📍 how to open link 📍", url=settings['tutorial'])
+        ]]
+        await message.reply(f"[{get_size(files.file_size)}] {files.file_name}\n\nYour file is ready, Please get using this link. 👍", reply_markup=InlineKeyboardMarkup(btn), protect_content=True)
+        return
+
+    CAPTION = settings['caption']
+    f_caption = CAPTION.format(
+        file_name = files.file_name,
+        file_size = get_size(files.file_size),
+        file_caption=files.caption
+    )
+    if settings.get('is_stream', IS_STREAM):
+        btn = [[
+            InlineKeyboardButton("✛ watch & download ✛", callback_data=f"stream#{file_id}")
+        ],[
+            InlineKeyboardButton('⚡️ Updates', url=UPDATES_LINK),
+            InlineKeyboardButton('💡 Support', url=SUPPORT_LINK)
+        ],[
+            InlineKeyboardButton('⁉️ close ⁉️', callback_data='close_data')
+        ]]
+    else:
+        btn = [[
+            InlineKeyboardButton('⚡️ Updates', url=UPDATES_LINK),
+            InlineKeyboardButton('💡 Support', url=SUPPORT_LINK)
+        ],[
+            InlineKeyboardButton('⁉️ close ⁉️', callback_data='close_data')
+        ]]
+    vp = await client.send_cached_media(
+        chat_id=message.from_user.id,
+        file_id=file_id,
+        caption=f_caption,
+        protect_content=False,
+        reply_markup=InlineKeyboardMarkup(btn)
+    )
+    time = get_readable_time(PM_FILE_DELETE_TIME)
+    msg = await vp.reply(f"Note: This message will be delete in {time} to avoid copyrights. Save the File to somewhere else")
+    await asyncio.sleep(PM_FILE_DELETE_TIME)
+    btns = [[
+        InlineKeyboardButton('get File again', callback_data=f"get_del_file#{grp_id}#{file_id}")
+    ]]
+    await msg.delete()
+    await vp.delete()
+    await vp.reply("The File has been gone ! Click given button to get it again.", reply_markup=InlineKeyboardMarkup(btns))
+            
       
 
 @Client.on_message(filters.command('index_channels'))
