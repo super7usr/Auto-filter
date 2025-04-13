@@ -29,7 +29,7 @@ async def pm_search(client, message):
     
     if not files:
         search_query = search.replace(" ", "+")
-        web_search_url = f"{URL}/movie?q={search_query}"
+        web_search_url = f"{URL}movie?q={search_query}"
         btn = [[
             InlineKeyboardButton("⚠️ Instructions", callback_data='instructions'),
             InlineKeyboardButton("🔎 Google Search", url=web_search_url)
@@ -93,7 +93,7 @@ async def pm_search(client, message):
             file_size = get_size(file.file_size)
             file_name = file.file_name
             # Use the direct file ID format for telegram link
-            telegram_link = f"https://t.me/{temp.U_NAME}?start=file_pm_{file.file_id}" 
+            telegram_link = f"https://t.me/{temp.U_NAME}?start=file_1_{file.file_id}" 
 
             # Generate shortlink
             try:
@@ -111,7 +111,7 @@ async def pm_search(client, message):
             file_size = get_size(file.file_size)
             file_name = file.file_name
             # Use the direct file ID format for telegram link
-            telegram_link = f"https://t.me/{temp.U_NAME}?start=file_1927155351_{file.file_id}"
+            telegram_link = f"https://t.me/{temp.U_NAME}?start=file_1_{file.file_id}"
             files_link += f"""<b>\n\n{file_num}. <a href="{telegram_link}">[{file_size}] {file_name}</a></b>"""
 
             # Web links will be handled centrally now, not per file
@@ -255,7 +255,7 @@ async def next_page(bot, query):
     if settings['links']:
         btn = []
         for file_num, file in enumerate(files, start=offset+1):
-            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
+            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_1_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
     else:
         btn = [[
             InlineKeyboardButton(text=f"📂 {get_size(file.file_size)} {file.file_name}", callback_data=f'file#{file.file_id}')
@@ -267,17 +267,12 @@ async def next_page(bot, query):
             [InlineKeyboardButton("📰 Languages", callback_data=f"languages#{key}#{req}#{offset}"),
             InlineKeyboardButton("🔍 Quality", callback_data=f"quality#{key}#{req}#{offset}")]
         )
-        btn.insert(1,
-            [InlineKeyboardButton("♻️ Send All ♻️", url=await get_shortlink(settings['url'], settings['api'], f'https://t.me/{temp.U_NAME}?start=all_{query.message.chat.id}_{key}'))]
-        )
     else:
         btn.insert(0,
             [InlineKeyboardButton("📰 Languages", callback_data=f"languages#{key}#{req}#{offset}"),
             InlineKeyboardButton("🔍 Quality", callback_data=f"quality#{key}#{req}#{offset}")]
         )
-        btn.insert(1,
-            [InlineKeyboardButton("♻️ Send All", callback_data=f"send_all#{key}#{req}")]
-        )
+        
 
     if 0 < offset <= MAX_BTN:
         off_set = 0
@@ -355,7 +350,7 @@ async def filter_languages_cb_handler(client: Client, query: CallbackQuery):
     if settings['links']:
         btn = []
         for file_num, file in enumerate(files, start=1):
-            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
+            files_link += f"""<b>\n\n{file_num}. <a href=https://t.me/{temp.U_NAME}?start=file_1_{file.file_id}>[{get_size(file.file_size)}] {file.file_name}</a></b>"""
     else:
         btn = [[
             InlineKeyboardButton(text=f"📂 {get_size(file.file_size)} {file.file_name}", callback_data=f'file#{file.file_id}')
@@ -364,8 +359,7 @@ async def filter_languages_cb_handler(client: Client, query: CallbackQuery):
         ]
     if settings['shortlink']:
         btn.insert(1,
-            [InlineKeyboardButton("♻️ Send All ♻️", url=await get_shortlink(settings['url'], settings['api'], f'https://t.me/{temp.U_NAME}?start=all_{query.message.chat.id}_{key}')),
-            InlineKeyboardButton("🔍 Quality", callback_data=f"quality#{key}#{req}#{offset}")]
+            [InlineKeyboardButton("🔍 Quality", callback_data=f"quality#{key}#{req}#{offset}")]
         )
     else:
         btn.insert(1,
