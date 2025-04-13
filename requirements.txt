@@ -1,4 +1,3 @@
-#Here are the unique names from the text:
 Pyrofork
 tgcrypto-pyrofork
 motor
@@ -27,4 +26,7 @@ python-telegram-bot
 flask
 psutil
 openai
-gitpython 
+gitpython
+beautifulsoup4
+aiohttp_jinja2
+cryptography
