@@ -742,8 +742,8 @@ async def cb_handler(client: Client, query: CallbackQuery):
             msg = await client.send_cached_media(chat_id=BIN_CHANNEL, file_id=file_id)
             file_hash = msg.id
             file_name = msg.video.file_name if msg.video else "video"
-            watch = f"{URL}/watch/{file_hash}/{file_name}?hash=AgADnh"
-            download = f"{URL}/{file_hash}/{file_name}?hash=AgADnh"
+            watch = f"{URL}watch/{file_hash}/{file_name}?hash=AgADnh"
+            download = f"{URL}{file_hash}/{file_name}?hash=AgADnh"
             btn=[[
                 InlineKeyboardButton("watch online", url=watch),
                 InlineKeyboardButton("fast download", url=download)
