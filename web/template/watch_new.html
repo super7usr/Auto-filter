@@ -11,310 +11,389 @@
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <style>
         :root {
-            --primary-gradient: linear-gradient(45deg, #0d253f, #1d3557, #2b4a7a);
-            --accent-color: #ff5e00;
-            --accent-glow: 0 0 10px rgba(255, 94, 0, 0.6);
-            --player-progress: linear-gradient(90deg, #ff5e00, #ff9e00);
-            --card-bg: rgba(15, 23, 42, 0.8);
-            --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            --primary-bg: #0f172a;
+            --secondary-bg: #1e293b;
+            --accent-color: #3b82f6;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --border-color: #334155;
+            --player-bg: #000000;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --success-color: #10b981;
+            --header-height: 60px;
+            --footer-height: 50px;
         }
-        
+
         body {
-            min-height: 100vh;
-            background: var(--primary-gradient);
-            background-size: 200% 200%;
-            animation: gradientBG 15s ease infinite;
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 20px 0;
             margin: 0;
+            padding: 0;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+
+        .container-fluid {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        
-        .container {
-            max-width: 1000px;
-            padding: 0 15px;
-        }
-        
-        .player-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: var(--box-shadow);
-            padding: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .player-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-        }
-        
-        .video-header {
+
+        /* Header styles */
+        .header {
+            background-color: var(--secondary-bg);
+            padding: 15px 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            height: var(--header-height);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
         }
-        
-        .header-left {
+
+        .logo {
             display: flex;
             align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2rem;
         }
-        
-        .video-icon {
-            font-size: 24px;
-            margin-right: 15px;
+
+        .logo i {
             color: var(--accent-color);
-            text-shadow: var(--accent-glow);
         }
-        
-        .file-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 0;
-            color: #fff;
-            text-shadow: var(--text-shadow);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 80%;
-        }
-        
-        .back-btn {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: #fff;
-            padding: 8px 15px;
-            border-radius: 20px;
+
+        .nav-links {
             display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
             text-decoration: none;
             font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
         }
-        
-        .back-btn:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #fff;
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
         }
-        
-        .player-container {
-            position: relative;
-            border-radius: 12px;
+
+        .nav-link.active {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--accent-color);
+        }
+
+        /* Main content styles */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: calc(var(--header-height) + 20px) 0 var(--footer-height) 0;
+        }
+
+        /* Player section */
+        .player-section {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .video-container {
+            width: 100%;
+            background-color: var(--player-bg);
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            background-color: #000;
-            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            aspect-ratio: 16 / 9;
         }
-        
+
         .plyr {
             --plyr-color-main: var(--accent-color);
             --plyr-video-control-color: #fff;
-            --plyr-video-control-color-hover: var(--accent-color);
-            --plyr-video-control-background-hover: rgba(255, 255, 255, 0.1);
-            --plyr-audio-control-background-hover: rgba(255, 255, 255, 0.1);
-            --plyr-video-pip-supported-display: inline;
-            --plyr-range-fill-background: var(--player-progress);
+            --plyr-range-fill-background: var(--accent-color);
         }
-        
-        .plyr--full-ui input[type=range] {
-            color: var(--accent-color);
-        }
-        
-        .plyr__control--overlaid {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border: 2px solid var(--accent-color);
-            box-shadow: var(--accent-glow);
-        }
-        
-        .plyr__control--overlaid:hover {
-            background: var(--accent-color);
-        }
-        
+
+        /* Video info section */
         .video-info {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
+            margin-top: 20px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
             padding: 20px;
-            margin-bottom: 20px;
+            border: 1px solid var(--card-border);
         }
-        
-        .video-features {
+
+        .video-title {
+            margin: 0 0 15px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
             display: flex;
-            justify-content: space-around;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .video-title i {
+            color: var(--accent-color);
+            font-size: 1.2rem;
+        }
+
+        .stats-container {
+            display: flex;
             flex-wrap: wrap;
             gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .feature-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            width: 120px;
-            transition: all 0.3s ease;
-        }
-        
-        .feature-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-3px);
-        }
-        
-        .feature-icon {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: var(--accent-color);
-            text-shadow: var(--accent-glow);
-        }
-        
-        .feature-title {
-            font-size: 0.9rem;
-            margin: 0;
-            color: #fff;
-        }
-        
-        .alert {
-            background: rgba(13, 110, 253, 0.15);
-            border-left: 4px solid #0d6efd;
-            border-radius: 8px;
-            padding: 15px;
             margin-bottom: 20px;
         }
-        
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding: 20px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+        .stat-item {
+            display: flex;
+            align-items: center;
             font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--text-tertiary);
+            gap: 5px;
         }
-        
+
+        .quality-tag {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--accent-color);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .download-btn {
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .download-btn:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        /* Footer styles */
+        .footer {
+            background-color: var(--secondary-bg);
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--footer-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .footer a {
             color: var(--accent-color);
             text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s ease;
         }
-        
+
         .footer a:hover {
-            text-shadow: var(--accent-glow);
+            text-decoration: underline;
         }
-        
-        /* Responsive adjustments */
+
+        /* Loading spinner */
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 5;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Responsive styling */
         @media (max-width: 768px) {
-            .video-header {
+            .header {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
+                height: auto;
+                padding: 15px;
+                position: static;
             }
-            
-            .file-title {
-                font-size: 1.3rem;
-                max-width: 100%;
-            }
-            
-            .video-features {
+
+            .nav-links {
+                margin-top: 15px;
+                width: 100%;
                 justify-content: center;
+                flex-wrap: wrap;
             }
-            
-            .feature-item {
-                width: 100px;
-                padding: 10px;
+
+            .main-content {
+                padding: 20px 0 calc(var(--footer-height) + 20px) 0;
             }
+
+            .video-title {
+                font-size: 1.2rem;
+            }
+
+            .stats-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        /* File metadata */
+        .file-metadata {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .metadata-item {
+            background-color: rgba(15, 23, 42, 0.5);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+        }
+
+        .metadata-label {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            margin-bottom: 5px;
+        }
+
+        .metadata-value {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 500;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-12">
-                <div class="player-card">
-                    <div class="video-header">
-                        <div class="header-left">
-                            <i class="fas fa-film video-icon"></i>
-                            <h1 class="file-title">%s</h1>
-                        </div>
-                        <a href="/" class="back-btn">
-                            <i class="fas fa-arrow-left"></i> Back to Home
-                        </a>
-                    </div>
-                    
-                    <div class="player-container">
-                        <tag src="%s" class="player"></tag>
-                    </div>
-                    
-                    <div class="video-features">
-                        <div class="feature-item">
-                            <i class="fas fa-download feature-icon"></i>
-                            <p class="feature-title">Download</p>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-play-circle feature-icon"></i>
-                            <p class="feature-title">HD Playback</p>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-volume-up feature-icon"></i>
-                            <p class="feature-title">Quality Audio</p>
-                        </div>
-                        <div class="feature-item">
-                            <i class="fas fa-expand feature-icon"></i>
-                            <p class="feature-title">Fullscreen</p>
-                        </div>
-                    </div>
-                    
-                    <div class="alert mt-4">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-info-circle me-2" style="font-size: 1.2rem; color: #0d6efd;"></i>
-                            <p class="mb-0">If the video doesn't play, try using the download button for offline viewing or switch to a different browser.</p>
-                        </div>
-                    </div>
+    <div class="container-fluid">
+        <header class="header">
+            <a href="/" class="logo">
+                <i class="fas fa-film"></i>
+                <span>Media Streamer</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="/movie" class="nav-link">
+                    <i class="fas fa-search"></i> Search
+                </a>
+                <a href="https://t.me/NEW_OLD_MOVIE_SERIES_bot" class="nav-link active">
+                    <i class="fab fa-telegram"></i> Telegram Bot
+                </a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <section class="player-section">
+                <div class="video-container">
+                    <div class="loading-spinner"></div>
+                    <tag src="%s" class="player"></tag>
                 </div>
-                
-                <div class="footer">
-                    <p class="mb-0">© 2025 Movie Series Bot | Powered by <a href="https://t.me/HA_Bots">HA Bots</a></p>
+
+                <div class="video-info">
+                    <h1 class="video-title">
+                        <i class="fas fa-play-circle"></i>
+                        %s
+                    </h1>
+
+                    <div class="stats-container">
+                        <div class="stat-item">
+                            <i class="fas fa-film"></i>
+                            <span class="quality-tag">HD</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-server"></i>
+                            <span>Direct Stream</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-language"></i>
+                            <span>Multiple Audio</span>
+                        </div>
+                    </div>
+
+                    <div class="file-metadata">
+                        <div class="metadata-item">
+                            <div class="metadata-label">Type</div>
+                            <div class="metadata-value">Video File</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Format</div>
+                            <div class="metadata-value">MP4/MKV</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Source</div>
+                            <div class="metadata-value">Telegram</div>
+                        </div>
+                    </div>
+
+                    <a href="%s" class="download-btn" download>
+                        <i class="fas fa-download"></i> Download
+                    </a>
                 </div>
-            </div>
-        </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p class="mb-0">© 2025 Media Streamer | Powered by <a href="https://t.me/HA_Bots">HA Bots</a></p>
+        </footer>
     </div>
-    
+
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
-        const controls = [
-            'play-large',
-            'rewind',
-            'play', 
-            'fast-forward', 
-            'progress', 
-            'current-time',
-            'duration',
-            'mute',
-            'volume',
-            'captions',
-            'settings',
-            'pip',
-            'airplay',
-            'download',
-            'fullscreen'
-        ];
-        
         document.addEventListener('DOMContentLoaded', () => {
+            const controls = [
+                'play-large',
+                'rewind',
+                'play', 
+                'fast-forward', 
+                'progress', 
+                'current-time',
+                'duration',
+                'mute',
+                'volume',
+                'captions',
+                'settings',
+                'pip',
+                'airplay',
+                'download',
+                'fullscreen'
+            ];
+
             const player = Plyr.setup('.player', { 
                 controls,
                 tooltips: { controls: true, seek: true },
@@ -325,39 +404,35 @@
                 speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3] },
                 quality: { default: 720, options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240] }
             });
-            
-            // Add loading animation
-            const playerContainer = document.querySelector('.player-container');
-            playerContainer.insertAdjacentHTML('beforeend', `
-                <div class="player-loader" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 2;">
-                    <div style="width: 50px; height: 50px; border: 3px solid transparent; border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                </div>
-            `);
-            
-            // Remove loader once player is ready
+
+            // Handle loading state
             player[0].on('ready', () => {
-                document.querySelector('.player-loader').style.display = 'none';
+                document.querySelector('.loading-spinner').style.display = 'none';
             });
-            
-            // Handle loading state changes
+
             player[0].on('loadstart waiting', () => {
-                document.querySelector('.player-loader').style.display = 'flex';
+                document.querySelector('.loading-spinner').style.display = 'block';
             });
-            
+
             player[0].on('canplay playing', () => {
-                document.querySelector('.player-loader').style.display = 'none';
+                document.querySelector('.loading-spinner').style.display = 'none';
+            });
+
+            // Handle errors
+            player[0].on('error', () => {
+                document.querySelector('.loading-spinner').style.display = 'none';
+                const videoContainer = document.querySelector('.video-container');
+                videoContainer.innerHTML += `
+                    <div style="position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); 
+                         display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:10;">
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#f59e0b; margin-bottom:15px;"></i>
+                        <p style="color:white; text-align:center; max-width:80%;">
+                            The video cannot be played. Please try downloading it instead.
+                        </p>
+                    </div>
+                `;
             });
         });
-        
-        // Add loading animation keyframes
-        document.head.insertAdjacentHTML('beforeend', `
-            <style>
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            </style>
-        `);
     </script>
 </body>
 </html>
