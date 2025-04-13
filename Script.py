@@ -200,10 +200,3 @@ All settings can be customized through the wizard interface."""
 
 <b>Try it now by clicking the "Mood Search" button in search results!</b>"""
 
-    SOURCE_TXT = """<b>🧩 <u>Bot Source Code</u> 🧩</b>
-
-<b>🤖 This bot is an open source project</b>
-
-<b>📦 Source:</b> <a href=https://github.com/HA-Bots/Auto-Filter-Bot><b>GitHub Repository</b></a>
-
-<b>👨‍💻 Developer:</b> <a href=https://t.me/HA_Bots>@HA_Bots</a>"""
