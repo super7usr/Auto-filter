@@ -281,6 +281,14 @@ async def next_page(bot, query):
     else:
         off_set = offset - MAX_BTN
 
+    # Add Web Search and IMDb buttons
+    web_search_url = f"{URL}movie?q={search}"
+    search_query = search.replace(" ", "+")
+    btn.append([
+        InlineKeyboardButton("🌐 Web Search", url=web_search_url),
+        InlineKeyboardButton("🎬 IMDB", url=f"https://www.imdb.com/find?q={search_query}")
+    ])
+    
     if n_offset == 0:
         btn.append(
             [InlineKeyboardButton("« Back", callback_data=f"next_{req}_{key}_{off_set}"),
@@ -739,21 +747,50 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data.startswith("stream"):
         try:
             file_id = query.data.split('#', 1)[1]
+            # Send media to the bin channel to get a message_id
             msg = await client.send_cached_media(chat_id=BIN_CHANNEL, file_id=file_id)
-            file_hash = msg.id
-            file_name = msg.video.file_name if msg.video else "video"
-            watch = f"{URL}watch/{file_hash}/{file_name}?hash=AgADnh"
-            download = f"{URL}{file_hash}/{file_name}?hash=AgADnh"
+            
+            # Get proper message_id for streaming
+            message_id = msg.id
+            
+            # Get file name (use generic "video" if not available)
+            if msg.video:
+                file_name = msg.video.file_name if msg.video.file_name else "video"
+            elif msg.document:
+                file_name = msg.document.file_name if msg.document.file_name else "document"
+            else:
+                file_name = "media"
+            
+            # Generate secure hash from message object (first 6 chars are enough)
+            from utils import get_hash
+            secure_hash = get_hash(msg)
+            
+            # Create streaming and download links with the correct hash
+            # Format for streaming video: /watch/{message_id}?hash={hash}
+            # Use the new dedicated watch endpoint with improved player UI
+            watch = f"{URL}/watch/{message_id}?hash={secure_hash}"
+            
+            # For download links, keep the original format
+            download = f"{URL}/{message_id}/{file_name}?hash={secure_hash}"
+            
+            # Create buttons with proper styling
             btn=[[
-                InlineKeyboardButton("watch online", url=watch),
-                InlineKeyboardButton("fast download", url=download)
+                InlineKeyboardButton("🎬 Watch Online", url=watch),
+                InlineKeyboardButton("⬇️ Download", url=download)
             ],[
-                InlineKeyboardButton('❌ close ❌', callback_data='close_data')
+                InlineKeyboardButton('❌ Close', callback_data='close_data')
             ]]
             reply_markup=InlineKeyboardMarkup(btn)
+            
+            # Update the message with the new buttons
             await query.edit_message_reply_markup(
                 reply_markup=reply_markup
             )
+            
+            # Log the stream request
+            user = query.from_user.mention if query.from_user else "Unknown User"
+            print(f"Stream link generated for {user}: {watch}")
+            
         except Exception as e:
             print(f"Stream error: {str(e)}")
             await query.answer("Unable to generate streaming links. Please try again.", show_alert=True)
@@ -1180,10 +1217,7 @@ async def auto_filter(client, msg, s, spoll=False):
             btn.insert(1,
                 [InlineKeyboardButton("♻️ Send All ♻️", callback_data=f"send_all#{key}#{req}")]
             )
-    # Add smart preview button
-    btn.insert(3, [
-        InlineKeyboardButton("🧠 Smart Preview", callback_data=f"smart_preview#{(files[0]).file_id}#{req}")
-    ])
+    # Smart preview button removed
 
     # Get IMDb data for traditional display
     imdb = await get_poster(search, file=(files[0]).file_name) if settings["imdb"] else None
