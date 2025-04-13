@@ -98,7 +98,7 @@ class script(object):
 
     FILE_CAPTION = """<b>📁 {file_name}</b>
 
-<b>💬 Join <a href="https://t.me/HA_Bots">@HA_Bots</a> for more files</b>
+<b>💬 Join <a href="https://t.me/M0VIES_CHANNEL">M0VIES_CHANNEL</a> for more files</b>
 
 <b>🚫 Please click on the close button when done</b>"""
 
