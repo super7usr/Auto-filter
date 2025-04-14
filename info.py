@@ -33,7 +33,7 @@ BOT_TOKEN = environ.get('BOT_TOKEN', '')
 if len(BOT_TOKEN) == 0:
     print('Error - BOT_TOKEN is missing, exiting now')
     exit()
-PORT = int(environ.get('PORT', '8383'))
+PORT = int(environ.get('PORT', '80'))
 
 # Add your images to "imgs" folder in this repo (https://github.com/HA-Bots/Auto-Filter-Bot/tree/main/imgs)
 PICS = [os.path.join('imgs', file) for file in os.listdir('imgs')]
