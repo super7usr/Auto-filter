@@ -157,6 +157,7 @@ AUTO_FILTER = is_enabled('AUTO_FILTER', True)
 IMDB = is_enabled('IMDB', False)
 SPELL_CHECK = is_enabled("SPELL_CHECK", True)
 SHORTLINK = is_enabled('SHORTLINK', False)
+BUTTON_LOCK = is_enabled('BUTTON_LOCK', True)
 
 # for stream
 IS_STREAM = is_enabled('IS_STREAM', True)
