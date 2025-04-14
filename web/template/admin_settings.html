@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings | Telegram Auto-Filter Bot</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(45deg, #091634, #0f3460, #164e87);
+            --secondary-gradient: linear-gradient(135deg, #00c6ff, #0072ff);
+            --card-bg: rgba(9, 22, 52, 0.85);
+            --text-glow: 0 0 10px rgba(0, 198, 255, 0.7);
+            --card-glow: 0 0 25px rgba(0, 114, 255, 0.6);
+            --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        
+        body {
+            min-height: 100vh;
+            background-color: #091634;
+            color: var(--bs-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-menu-link:hover, .sidebar-menu-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left-color: #00c6ff;
+        }
+        
+        .sidebar-menu-icon {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .dashboard-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+        }
+        
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(0, 198, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 198, 255, 0.3);
+            color: white;
+        }
+        
+        .form-check-input:checked {
+            background-color: #0072ff;
+            border-color: #0072ff;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #0072ff, #00c6ff);
+            border: none;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #0066e8, #00b4f0);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 114, 255, 0.4);
+        }
+        
+        .system-status {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #4caf50;
+            margin-right: 8px;
+            position: relative;
+        }
+        
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #4caf50;
+            opacity: 0.3;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+            70% {
+                transform: scale(2);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+        
+        .status-text {
+            font-size: 0.9rem;
+        }
+        
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 1.5rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        /* Advertisement specific styles */
+        .code-area {
+            min-height: 150px;
+            font-family: 'Courier New', Courier, monospace;
+            resize: vertical;
+        }
+        
+        .frequency-options {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .frequency-option {
+            flex: 1;
+            min-width: 100px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .frequency-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .frequency-option.active {
+            background: rgba(0, 114, 255, 0.2);
+            border-color: #0072ff;
+        }
+        
+        .frequency-option-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .frequency-option-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Settings sections */
+        .settings-section {
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-switch {
+            padding-left: 2.5em;
+        }
+        
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+            margin-left: -2.5em;
+        }
+        
+        /* Alert styling */
+        .alert {
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Adblock warning preview */
+        .adblock-preview {
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            background: rgba(255, 0, 0, 0.1);
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="admin-title">Admin Dashboard</h2>
+            <p class="admin-subtitle">Telegram Auto-Filter Bot</p>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="/admin" class="sidebar-menu-link">
+                    <i class="fas fa-tachometer-alt sidebar-menu-icon"></i>
+                    Overview
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/users" class="sidebar-menu-link">
+                    <i class="fas fa-users sidebar-menu-icon"></i>
+                    Users
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/files" class="sidebar-menu-link">
+                    <i class="fas fa-file-alt sidebar-menu-icon"></i>
+                    Files
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/chats" class="sidebar-menu-link">
+                    <i class="fas fa-comments sidebar-menu-icon"></i>
+                    Chats
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/mongodb" class="sidebar-menu-link">
+                    <i class="fas fa-database sidebar-menu-icon"></i>
+                    MongoDB
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/logs" class="sidebar-menu-link">
+                    <i class="fas fa-list-alt sidebar-menu-icon"></i>
+                    Logs
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin/settings" class="sidebar-menu-link active">
+                    <i class="fas fa-cog sidebar-menu-icon"></i>
+                    Settings
+                </a>
+            </li>
+        </ul>
+        
+        <div class="system-status">
+            <span class="status-indicator"></span>
+            <span class="status-text">System Online</span>
+        </div>
+        
+        <a href="/admin/logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </a>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="dashboard-header">
+            <button class="toggle-sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="dashboard-title">Settings</h1>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span id="current-date"></span>
+                <!-- Include the Notification Center Component -->
+                {% include 'components/notification_center.html' %}
+            </div>
+        </header>
+        
+        {% if success_message %}
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle me-2"></i> {{ success_message }}
+        </div>
+        {% endif %}
+        
+        {% if error_message %}
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i> {{ error_message }}
+        </div>
+        {% endif %}
+        
+        <!-- Advertisement Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-ad me-2"></i> Advertisement Settings
+                </h2>
+            </div>
+            <div class="card-body">
+                <form action="/admin/settings/update-ads" method="POST">
+                    <div class="settings-section">
+                        <div class="form-group form-switch">
+                            <input class="form-check-input" type="checkbox" id="enable_ads" name="enable_ads" {% if ads_settings.enabled %}checked{% endif %}>
+                            <label class="form-check-label" for="enable_ads">Enable Advertisements</label>
+                            <small class="form-text text-muted d-block mt-1">When enabled, ads will be displayed in search results based on the frequency below.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ads_code" class="form-label">Advertisement Code</label>
+                            <textarea class="form-control code-area" id="ads_code" name="ads_code" rows="6" placeholder="Paste your advertisement code here...">{{ ads_settings.ads_code }}</textarea>
+                            <small class="form-text text-muted">Paste your advertisement code snippet here. This will be displayed in search results.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Display Frequency</label>
+                            <p class="text-muted">How often should ads appear in search results?</p>
+                            
+                            <div class="frequency-options">
+                                <input type="hidden" id="frequency" name="frequency" value="{{ ads_settings.frequency }}">
+                                
+                                <div class="frequency-option {% if ads_settings.frequency == 5 %}active{% endif %}" data-value="5">
+                                    <div class="frequency-option-value">5</div>
+                                    <div class="frequency-option-label">Every 5 results</div>
+                                </div>
+                                
+                                <div class="frequency-option {% if ads_settings.frequency == 10 %}active{% endif %}" data-value="10">
+                                    <div class="frequency-option-value">10</div>
+                                    <div class="frequency-option-label">Every 10 results</div>
+                                </div>
+                                
+                                <div class="frequency-option {% if ads_settings.frequency == 15 %}active{% endif %}" data-value="15">
+                                    <div class="frequency-option-value">15</div>
+                                    <div class="frequency-option-label">Every 15 results</div>
+                                </div>
+                                
+                                <div class="frequency-option {% if ads_settings.frequency == 20 %}active{% endif %}" data-value="20">
+                                    <div class="frequency-option-value">20</div>
+                                    <div class="frequency-option-label">Every 20 results</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group form-switch">
+                            <input class="form-check-input" type="checkbox" id="detect_adblock" name="detect_adblock" {% if ads_settings.detect_adblock %}checked{% endif %}>
+                            <label class="form-check-label" for="detect_adblock">Detect Ad Blockers</label>
+                            <small class="form-text text-muted d-block mt-1">When enabled, a message will be shown to users with ad blockers.</small>
+                        </div>
+                        
+                        <div class="form-group" id="adblock_message_group">
+                            <label for="adblock_message" class="form-label">Ad Blocker Message</label>
+                            <textarea class="form-control" id="adblock_message" name="adblock_message" rows="3">{{ ads_settings.adblock_message }}</textarea>
+                            <small class="form-text text-muted">This message will be shown to users with ad blockers.</small>
+                            
+                            <div class="adblock-preview mt-3">
+                                <h5><i class="fas fa-exclamation-triangle me-2"></i> Ad Blocker Detected</h5>
+                                <p id="adblock_preview_text">{{ ads_settings.adblock_message }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Save Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Other settings sections can be added here -->
+        
+    </main>
+    
+    <script>
+        // Set current date
+        const date = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = date.toLocaleDateString('en-US', options);
+        
+        // Mobile sidebar toggle
+        document.querySelector('.toggle-sidebar').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        });
+        
+        // Frequency option selection
+        document.querySelectorAll('.frequency-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove active class from all options
+                document.querySelectorAll('.frequency-option').forEach(opt => {
+                    opt.classList.remove('active');
+                });
+                
+                // Add active class to clicked option
+                this.classList.add('active');
+                
+                // Set the value in the hidden input
+                document.getElementById('frequency').value = this.getAttribute('data-value');
+            });
+        });
+        
+        // Toggle adblock message group based on checkbox
+        const detectAdblockCheckbox = document.getElementById('detect_adblock');
+        const adblockMessageGroup = document.getElementById('adblock_message_group');
+        
+        function toggleAdblockMessage() {
+            adblockMessageGroup.style.display = detectAdblockCheckbox.checked ? 'block' : 'none';
+        }
+        
+        detectAdblockCheckbox.addEventListener('change', toggleAdblockMessage);
+        
+        // Initialize toggle
+        toggleAdblockMessage();
+        
+        // Live preview of adblock message
+        const adblockMessage = document.getElementById('adblock_message');
+        const adblockPreviewText = document.getElementById('adblock_preview_text');
+        
+        adblockMessage.addEventListener('input', function() {
+            adblockPreviewText.textContent = this.value;
+        });
+    </script>
+</body>
+</html>

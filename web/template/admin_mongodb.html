@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Management | Admin Dashboard</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <link rel="stylesheet" href="/static/css/notifications.css">
+</head>
+
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="admin-title">Admin Dashboard</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a href="/admin/dashboard" class="menu-link">
+                        <i class="fas fa-gauge-high"></i> Dashboard
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/admin/users" class="menu-link">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/admin/files" class="menu-link">
+                        <i class="fas fa-file"></i> Files
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/admin/broadcast" class="menu-link">
+                        <i class="fas fa-broadcast-tower"></i> Broadcast
+                    </a>
+                </li>
+                <li class="menu-item active">
+                    <a href="/admin/mongodb" class="menu-link active">
+                        <i class="fas fa-database"></i> MongoDB
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/admin/settings" class="menu-link">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/admin/logs" class="menu-link">
+                        <i class="fas fa-list"></i> Logs
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/admin/backup" class="menu-link">
+                        <i class="fas fa-download"></i> Backup
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/admin/logout" class="menu-link">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Navbar -->
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <button class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">MongoDB Management</h1>
+                </div>
+                <div class="navbar-right">
+                    <!-- Notification Center -->
+                    <div class="notification-center" id="notificationCenter">
+                        <button class="notification-toggle" id="notificationToggle">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge" id="notificationCount">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-header">
+                                <h3>Notifications</h3>
+                                <button class="mark-all-read" id="markAllRead">Mark all as read</button>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                <!-- Notifications will be added here dynamically -->
+                                <div class="empty-notifications">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p>No new notifications</p>
+                                </div>
+                            </div>
+                            <div class="notification-footer">
+                                <a href="/admin/notifications">View all notifications</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- MongoDB Dashboard Content -->
+            <div class="container mt-4">
+                <!-- MongoDB Status Card -->
+                <div class="card mb-4 border-0 shadow">
+                    <div class="card-header bg-dark">
+                        <h5 class="mb-0 d-flex align-items-center">
+                            <i class="fas fa-database me-2"></i> MongoDB Status
+                            <button id="refreshMongoStatus" class="btn btn-sm btn-outline-primary ms-auto">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="mongoStatusContent">
+                            <!-- Status will be loaded dynamically -->
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading MongoDB status...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MongoDB Operations -->
+                <div class="row">
+                    <!-- Data Migration Card -->
+                    <div class="col-md-6">
+                        <div class="card mb-4 border-0 shadow">
+                            <div class="card-header bg-dark">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-exchange-alt me-2"></i> Data Migration
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="migrationForm">
+                                    <div class="mb-3">
+                                        <label for="sourceDb" class="form-label">Source Database</label>
+                                        <select class="form-select" id="sourceDb" required>
+                                            <option value="" selected disabled>Select source database</option>
+                                            <!-- Options will be populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="targetDb" class="form-label">Target Database</label>
+                                        <select class="form-select" id="targetDb" required>
+                                            <option value="" selected disabled>Select target database</option>
+                                            <!-- Options will be populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-play me-2"></i> Start Migration
+                                        </button>
+                                    </div>
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Migration may take time for large databases. The process runs in the background.
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuration Card -->
+                    <div class="col-md-6">
+                        <div class="card mb-4 border-0 shadow">
+                            <div class="card-header bg-dark">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-cogs me-2"></i> Configuration
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Primary Database</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-database"></i></span>
+                                        <input type="text" class="form-control" id="primaryDbUrl" value="{{primary_db_url}}" readonly>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Secondary Database</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-database"></i></span>
+                                        <input type="text" class="form-control" id="secondaryDbUrl" value="{{secondary_db_url}}" readonly>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Additional Databases</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-layer-group"></i></span>
+                                        <input type="text" class="form-control" id="additionalDbCount" value="{{additional_db_count}} configured" readonly>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    To add or change database URLs, update your environment variables.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MongoDB Statistics -->
+                <div class="card mb-4 border-0 shadow">
+                    <div class="card-header bg-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i> Database Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="dbStatsContent">
+                            <!-- Stats will be loaded dynamically -->
+                            <div class="chart-container" style="position: relative; height:40vh;">
+                                <canvas id="dbStatsChart"></canvas>
+                            </div>
+                            <div class="mt-4">
+                                <h6>Document Distribution</h6>
+                                <div class="progress" style="height: 25px;">
+                                    <!-- Will be populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & Other Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/admin.js"></script>
+    <script src="/static/js/notifications.js"></script>
+    
+    <!-- MongoDB Management Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch MongoDB status on page load
+            fetchMongoDBStatus();
+            
+            // Refresh button event listener
+            document.getElementById('refreshMongoStatus').addEventListener('click', function() {
+                fetchMongoDBStatus();
+            });
+            
+            // Migration form submission
+            document.getElementById('migrationForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const sourceDb = document.getElementById('sourceDb').value;
+                const targetDb = document.getElementById('targetDb').value;
+                
+                if (sourceDb === targetDb) {
+                    alert('Source and target databases cannot be the same');
+                    return;
+                }
+                
+                if (confirm('Are you sure you want to start data migration? This process will run in the background and may take time.')) {
+                    startMigration(sourceDb, targetDb);
+                }
+            });
+        });
+        
+        // Function to fetch MongoDB status
+        function fetchMongoDBStatus() {
+            const statusContainer = document.getElementById('mongoStatusContent');
+            statusContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading MongoDB status...</p>
+                </div>
+            `;
+            
+            // Fetch status from API (this would be your actual endpoint)
+            fetch('/api/admin/mongodb/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateMongoDBStatusUI(data);
+                    updateDatabaseOptions(data.databases);
+                    createDbStatsChart(data.databases);
+                })
+                .catch(error => {
+                    statusContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Error loading MongoDB status: ${error.message}
+                        </div>
+                    `;
+                });
+        }
+        
+        // Function to update the MongoDB status UI
+        function updateMongoDBStatusUI(data) {
+            const statusContainer = document.getElementById('mongoStatusContent');
+            
+            if (!data.databases || data.databases.length === 0) {
+                statusContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        No MongoDB databases configured
+                    </div>
+                `;
+                return;
+            }
+            
+            let statusHtml = '<div class="table-responsive"><table class="table table-hover">';
+            statusHtml += `
+                <thead>
+                    <tr>
+                        <th>Database</th>
+                        <th>Documents</th>
+                        <th>Storage Size</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            data.databases.forEach(db => {
+                const statusBadge = db.status === 'online' 
+                    ? '<span class="badge bg-success">Online</span>' 
+                    : '<span class="badge bg-danger">Offline</span>';
+                    
+                statusHtml += `
+                    <tr>
+                        <td>${db.name}</td>
+                        <td>${db.documentCount.toLocaleString()}</td>
+                        <td>${db.storageSize} MB</td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+            });
+            
+            statusHtml += '</tbody></table></div>';
+            statusContainer.innerHTML = statusHtml;
+        }
+        
+        // Function to update the database options in the migration form
+        function updateDatabaseOptions(databases) {
+            const sourceSelect = document.getElementById('sourceDb');
+            const targetSelect = document.getElementById('targetDb');
+            
+            // Clear existing options
+            sourceSelect.innerHTML = '<option value="" selected disabled>Select source database</option>';
+            targetSelect.innerHTML = '<option value="" selected disabled>Select target database</option>';
+            
+            // Add database options
+            databases.forEach((db, index) => {
+                if (db.status === 'online') {
+                    const sourceOption = document.createElement('option');
+                    sourceOption.value = index;
+                    sourceOption.textContent = `${db.name} (${db.documentCount.toLocaleString()} documents)`;
+                    sourceSelect.appendChild(sourceOption);
+                    
+                    const targetOption = document.createElement('option');
+                    targetOption.value = index;
+                    targetOption.textContent = `${db.name} (${db.documentCount.toLocaleString()} documents)`;
+                    targetSelect.appendChild(targetOption);
+                }
+            });
+        }
+        
+        // Function to create database stats chart
+        function createDbStatsChart(databases) {
+            const ctx = document.getElementById('dbStatsChart').getContext('2d');
+            
+            // Extract data for chart
+            const labels = databases.map(db => db.name);
+            const documentCounts = databases.map(db => db.documentCount);
+            const storageSizes = databases.map(db => db.storageSize);
+            
+            // Create the chart
+            const dbStatsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Document Count',
+                            data: documentCounts,
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Storage Size (MB)',
+                            data: storageSizes,
+                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Document Count'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Storage Size (MB)'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update progress bar for document distribution
+            const progressContainer = document.querySelector('.progress');
+            let progressHtml = '';
+            const totalDocs = documentCounts.reduce((acc, count) => acc + count, 0);
+            
+            const colors = [
+                'bg-primary', 'bg-success', 'bg-danger', 
+                'bg-warning', 'bg-info', 'bg-secondary'
+            ];
+            
+            databases.forEach((db, index) => {
+                const percentage = totalDocs === 0 ? 0 : (db.documentCount / totalDocs * 100).toFixed(1);
+                const colorClass = colors[index % colors.length];
+                
+                progressHtml += `
+                    <div class="progress-bar ${colorClass}" role="progressbar" 
+                        style="width: ${percentage}%" 
+                        aria-valuenow="${percentage}" 
+                        aria-valuemin="0" 
+                        aria-valuemax="100" 
+                        title="${db.name}: ${percentage}%">
+                        ${db.name}: ${percentage}%
+                    </div>
+                `;
+            });
+            
+            progressContainer.innerHTML = progressHtml;
+        }
+        
+        // Function to start migration
+        function startMigration(sourceDb, targetDb) {
+            const migrationForm = document.getElementById('migrationForm');
+            const submitButton = migrationForm.querySelector('button[type="submit"]');
+            
+            // Disable form during migration
+            migrationForm.querySelectorAll('select, button').forEach(el => el.disabled = true);
+            submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Migration in progress...`;
+            
+            // Call API to start migration
+            fetch('/api/admin/mongodb/migrate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sourceDb: parseInt(sourceDb),
+                    targetDb: parseInt(targetDb)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Re-enable form
+                migrationForm.querySelectorAll('select, button').forEach(el => el.disabled = false);
+                submitButton.innerHTML = `<i class="fas fa-play me-2"></i> Start Migration`;
+                
+                if (data.success) {
+                    alert(`Migration started successfully! Operation ID: ${data.operationId}`);
+                    // You could add code here to poll for migration status
+                } else {
+                    alert(`Error starting migration: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                // Re-enable form
+                migrationForm.querySelectorAll('select, button').forEach(el => el.disabled = false);
+                submitButton.innerHTML = `<i class="fas fa-play me-2"></i> Start Migration`;
+                
+                alert(`Error: ${error.message}`);
+            });
+        }
+    </script>
+</body>
+
+</html>
