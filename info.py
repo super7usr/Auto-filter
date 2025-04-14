@@ -33,7 +33,7 @@ BOT_TOKEN = environ.get('BOT_TOKEN', '')
 if len(BOT_TOKEN) == 0:
     print('Error - BOT_TOKEN is missing, exiting now')
     exit()
-PORT = int(environ.get('PORT', '80'))
+PORT = int(environ.get('PORT', '8383'))
 
 # Add your images to "imgs" folder in this repo (https://github.com/HA-Bots/Auto-Filter-Bot/tree/main/imgs)
 PICS = [os.path.join('imgs', file) for file in os.listdir('imgs')]
@@ -94,9 +94,30 @@ else:
     print('Info - Defaulting to MongoDB')
     USE_POSTGRES = False
 
+# Multi-MongoDB configuration
 SECOND_DATABASE_URL = environ.get('SECOND_DATABASE_URL', "")
 if len(SECOND_DATABASE_URL) == 0:
     print('Info - SECOND_DATABASE_URL is empty')
+else:
+    print('Info - SECOND_DATABASE_URL is configured')
+
+# Additional MongoDB URLs as JSON array or single URL string
+MULTI_MONGODB_URLS = environ.get('MULTI_MONGODB_URLS', "")
+if len(MULTI_MONGODB_URLS) == 0:
+    print('Info - No additional MongoDB URLs configured (MULTI_MONGODB_URLS is empty)')
+else:
+    import json
+    try:
+        # Try to parse as JSON array
+        json.loads(MULTI_MONGODB_URLS)
+        print('Info - Additional MongoDB URLs configured via MULTI_MONGODB_URLS')
+    except json.JSONDecodeError:
+        if MULTI_MONGODB_URLS.startswith(('mongodb://', 'mongodb+srv://')):
+            # Single URL string
+            print('Info - Additional MongoDB URL configured via MULTI_MONGODB_URLS')
+        else:
+            print('Warning - MULTI_MONGODB_URLS is not a valid JSON array or MongoDB URL')
+
 DATABASE_NAME = environ.get('DATABASE_NAME', "Cluster0")
 COLLECTION_NAME = environ.get('COLLECTION_NAME', 'Files')
 

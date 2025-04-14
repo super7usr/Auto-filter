@@ -98,7 +98,7 @@ class script(object):
 
     FILE_CAPTION = """<b>📁 {file_name}</b>
 
-<b>💬 Join <a href="https://t.me/M0VIES_CHANNEL">M0VIES_CHANNEL</a> for more files</b>
+<b>💬 Join <a href="https://t.me/HA_Bots">@HA_Bots</a> for more files</b>
 
 <b>🚫 Please click on the close button when done</b>"""
 
@@ -138,7 +138,8 @@ class script(object):
 <b>🔹 /users</b> - View all users details
 <b>🔹 /chats</b> - View all groups
 <b>🔹 /invite_link</b> - Generate invite link
-<b>🔹 /index</b> - Index channels"""
+<b>🔹 /index</b> - Index channels
+<b>🔹 /mongodb_status</b> - MongoDB database management"""
     
     USER_COMMAND_TXT = """<b>🛠️ <u>User Commands</u> 🛠️</b>
 
@@ -199,4 +200,26 @@ All settings can be customized through the wizard interface."""
 • 🎭 Artistic - Indie films and artistic masterpieces
 
 <b>Try it now by clicking the "Mood Search" button in search results!</b>"""
+
+    MONGODB_MANAGEMENT_TXT = """<b>🗄️ <u>Multi-MongoDB Management</u> 🗄️</b>
+
+<b>This bot supports multiple MongoDB databases for enhanced performance and reliability.</b>
+
+<b>Benefits of Multi-MongoDB:</b>
+• <b>Improved performance</b> - Distribute database load across multiple servers
+• <b>Higher reliability</b> - Continue operations even if one database fails
+• <b>Unlimited storage</b> - Overcome single database size limitations
+• <b>Geographic distribution</b> - Connect to databases in different regions
+
+<b>Admin Commands:</b>
+• <b>/mongodb_status</b> - Check status of all configured MongoDB instances
+• <b>Data Migration</b> - Move content between databases through the interactive menu
+
+<b>Configuration:</b>
+The bot supports the following environment variables:
+• <b>DATABASE_URL</b> - Primary MongoDB connection string
+• <b>SECOND_DATABASE_URL</b> - Secondary MongoDB connection string
+• <b>MULTI_MONGODB_URLS</b> - Additional MongoDB URLs (JSON array or single URL)
+
+<b>Note:</b> File search operations automatically search across all configured databases, while file saving tries databases in sequence until successful."""
 
