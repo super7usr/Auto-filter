@@ -4,65 +4,96 @@ import re
 import base64
 from pyrogram.file_id import FileId
 import os
+import json
 from info import USE_CAPTION_FILTER, DATABASE_URL, SECOND_DATABASE_URL, DATABASE_NAME, COLLECTION_NAME, MAX_BTN
+
+# Enhanced to support multiple MongoDB instances
+MULTI_MONGODB_URLS = os.environ.get('MULTI_MONGODB_URLS', '')
+mongodb_urls = []
+
+# Add primary database URL
+if DATABASE_URL and DATABASE_URL.startswith('mongodb'):
+    mongodb_urls.append(DATABASE_URL)
+
+# Add secondary database URL if exists
+if SECOND_DATABASE_URL and SECOND_DATABASE_URL.startswith('mongodb'):
+    mongodb_urls.append(SECOND_DATABASE_URL)
+
+# Add additional MongoDB URLs if configured
+if MULTI_MONGODB_URLS:
+    try:
+        additional_urls = json.loads(MULTI_MONGODB_URLS)
+        if isinstance(additional_urls, list):
+            for url in additional_urls:
+                if url and url not in mongodb_urls and url.startswith('mongodb'):
+                    mongodb_urls.append(url)
+        elif isinstance(additional_urls, str) and additional_urls.startswith('mongodb'):
+            if additional_urls not in mongodb_urls:
+                mongodb_urls.append(additional_urls)
+    except json.JSONDecodeError:
+        # Handle case where it's a single URL string
+        if MULTI_MONGODB_URLS.startswith('mongodb') and MULTI_MONGODB_URLS not in mongodb_urls:
+            mongodb_urls.append(MULTI_MONGODB_URLS)
+
+# Print MongoDB configuration (redacted for security)
+print(f"Using {len(mongodb_urls)} MongoDB instances")
 
 # Check if we're using PostgreSQL
 if DATABASE_URL and not DATABASE_URL.startswith('mongodb'):
     from database.sql_adapter import db_adapter, Media
     using_postgres = True
 else:
-    # Fallback to MongoDB
+    # Use MongoDB
     from pymongo.errors import DuplicateKeyError, OperationFailure 
     from umongo import Instance, Document, fields
     from motor.motor_asyncio import AsyncIOMotorClient
     from marshmallow.exceptions import ValidationError
     
-    # Use MongoDB URI from environment variable
-    mongo_uri = DATABASE_URL
-    print(f"Connecting to MongoDB: {mongo_uri}")
-    client = AsyncIOMotorClient(mongo_uri)
-    db = client[DATABASE_NAME]
-    instance = Instance.from_db(db)
     using_postgres = False
     
-    @instance.register
-    class Media(Document):
-        file_id = fields.StrField(attribute='_id')
-        file_name = fields.StrField(required=True)
-        file_size = fields.IntField(required=True)
-        caption = fields.StrField(allow_none=True)
+    # Initialize MongoDB clients, databases, and models
+    mongo_clients = []
+    mongo_dbs = []
+    mongo_instances = []
+    mongo_models = []
     
-        class Meta:
-            indexes = ('$file_name', )
-            collection_name = COLLECTION_NAME
-            strict = False
-
-
-
-#second db
-if SECOND_DATABASE_URL:
-    second_client = AsyncIOMotorClient(SECOND_DATABASE_URL)
-    second_db = second_client[DATABASE_NAME]
-    second_instance = Instance.from_db(second_db)
-
-    @second_instance.register
-    class SecondMedia(Document):
-
-        file_id = fields.StrField(attribute='_id')
-        file_name = fields.StrField(required=True)
-        file_size = fields.IntField(required=True)
-        caption = fields.StrField(allow_none=True)
-
-        class Meta:
-             indexes = ('$file_name', )
-             collection_name = COLLECTION_NAME
-             strict = False
+    for i, mongo_uri in enumerate(mongodb_urls):
+        print(f"Connecting to MongoDB #{i+1}")
+        client = AsyncIOMotorClient(mongo_uri)
+        db = client[DATABASE_NAME]
+        instance = Instance.from_db(db)
+        
+        # Create Media model for this instance
+        @instance.register
+        class MediaModel(Document):
+            file_id = fields.StrField(attribute='_id')
+            file_name = fields.StrField(required=True)
+            file_size = fields.IntField(required=True)
+            caption = fields.StrField(allow_none=True)
+        
+            class Meta:
+                indexes = ('$file_name', )
+                collection_name = COLLECTION_NAME
+                strict = False
+        
+        mongo_clients.append(client)
+        mongo_dbs.append(db)
+        mongo_instances.append(instance)
+        mongo_models.append(MediaModel)
+    
+    # Set the primary Media model (for backward compatibility)
+    if mongo_models:
+        Media = mongo_models[0]
+        
+    # Legacy support for the second database
+    if len(mongo_models) > 1:
+        SecondMedia = mongo_models[1]
 
 
 
 
 async def save_file(media):
-    """Save file in database"""
+    """Save file in database with support for multiple MongoDB instances"""
     
     if using_postgres:
         # PostgreSQL version
@@ -90,42 +121,48 @@ async def save_file(media):
         file_id = unpack_new_file_id(media.file_id)
         file_name = re.sub(r"@\w+|(_|\-|\.|\+)", " ", str(media.file_name))
         file_caption = re.sub(r"@\w+|(_|\-|\.|\+)", " ", str(media.caption))
-        try:
-            file = Media(
-                file_id=file_id,
-                file_name=file_name,
-                file_size=media.file_size,
-                caption=file_caption
-            )
-        except ValidationError:
-            print(f'Saving Error - {file_name}')
-            return 'err'
-        else:
+        
+        # Check if file exists in any database first (to avoid duplicate attempts)
+        for i, model in enumerate(mongo_models):
             try:
+                exists = await model.find_one({'_id': file_id})
+                if exists:
+                    print(f'Already saved in DB #{i+1} - {file_name}')
+                    return 'dup'
+            except Exception as e:
+                print(f'Error checking DB #{i+1}: {e}')
+        
+        # Try to save to each database in order until successful
+        for i, model in enumerate(mongo_models):
+            try:
+                file = model(
+                    file_id=file_id,
+                    file_name=file_name,
+                    file_size=media.file_size,
+                    caption=file_caption
+                )
                 await file.commit()
-            except DuplicateKeyError:      
-                print(f'Already Saved - {file_name}')
-                return 'dup'
-            except OperationFailure: #if 1st db is full
-                if SECOND_DATABASE_URL:
-                    file = SecondMedia(
-                        file_id=file_id,
-                        file_name=file_name,
-                        file_size=media.file_size,
-                        caption=file_caption
-                        )
-                    try:
-                        await file.commit()
-                        print(f'Saved to 2nd db - {file_name}')
-                        return 'suc'
-                    except DuplicateKeyError:
-                        print(f'Already Saved in 2nd db - {file_name}')
-                        return 'dup'
-            else:
-                print(f'Saved - {file_name}')
+                print(f'Saved to DB #{i+1} - {file_name}')
                 return 'suc'
+            except ValidationError:
+                print(f'Validation error in DB #{i+1} - {file_name}')
+                continue
+            except DuplicateKeyError:
+                print(f'Already saved in DB #{i+1} - {file_name}')
+                return 'dup'
+            except OperationFailure as e:
+                print(f'Operation failure in DB #{i+1}: {e}')
+                continue
+            except Exception as e:
+                print(f'Error saving to DB #{i+1}: {e}')
+                continue
+        
+        # If we get here, all databases failed
+        print(f'Failed to save to any database - {file_name}')
+        return 'err'
 
 async def get_search_results(query, max_results=MAX_BTN, offset=0, lang=None):
+    """Search for files across all configured MongoDB instances"""
     query = str(query) # to ensure the query is string to stripe.
     query = query.strip()
     
@@ -182,12 +219,17 @@ async def get_search_results(query, max_results=MAX_BTN, offset=0, lang=None):
         else:
             filter = {'file_name': regex}
     
-        cursor = Media.find(filter)
-        results = [doc async for doc in cursor]
-    
-        if SECOND_DATABASE_URL:
-            cursor2 = SecondMedia.find(filter)
-            results.extend([doc async for doc in cursor2])
+        # Search across all MongoDB instances
+        results = []
+        for i, model in enumerate(mongo_models):
+            try:
+                cursor = model.find(filter)
+                db_results = [doc async for doc in cursor]
+                if db_results:
+                    print(f"Found {len(db_results)} results in DB #{i+1}")
+                    results.extend(db_results)
+            except Exception as e:
+                print(f"Error searching DB #{i+1}: {e}")
     
         if lang:
             lang_files = [file for file in results if lang in file.file_name.lower()]
@@ -207,6 +249,7 @@ async def get_search_results(query, max_results=MAX_BTN, offset=0, lang=None):
     
     
 async def delete_files(query):
+    """Delete files across all MongoDB instances that match the query"""
     query = query.strip()
     
     if using_postgres:
@@ -234,12 +277,42 @@ async def delete_files(query):
             regex = re.compile(raw_pattern, flags=re.IGNORECASE)
         except:
             regex = query
+        
         filter = {'file_name': regex}
-        total = await Media.count_documents(filter)
-        files = Media.find(filter)
-        return total, files
+        total_deleted = 0
+        deleted_filenames = []
+        
+        # Delete from all MongoDB instances
+        for i, model in enumerate(mongo_models):
+            try:
+                # Count documents before deletion
+                db_total = await model.count_documents(filter)
+                if db_total > 0:
+                    # Get file names for reporting
+                    cursor = model.find(filter)
+                    files = [doc async for doc in cursor]
+                    for file in files:
+                        deleted_filenames.append(file.file_name)
+                    
+                    # Delete the files
+                    await model.collection.delete_many(filter)
+                    print(f"Deleted {db_total} files from DB #{i+1}")
+                    total_deleted += db_total
+            except Exception as e:
+                print(f"Error deleting from DB #{i+1}: {e}")
+        
+        # Return results in format expected by the bot
+        class FilesCursor:
+            def __init__(self, files):
+                self.files = files
+                
+            async def to_list(self, length=0):
+                return [{"file_name": filename} for filename in self.files[:length or len(self.files)]]
+        
+        return total_deleted, FilesCursor(deleted_filenames)
 
 async def get_file_details(query):
+    """Get file details from all MongoDB instances"""
     if using_postgres:
         # PostgreSQL version
         file_details = db_adapter.get_file_details(query)
@@ -261,11 +334,24 @@ async def get_file_details(query):
             
         return results
     else:
-        # MongoDB version
+        # MongoDB version - search all databases
         filter = {'file_id': query}
-        cursor = Media.find(filter)
-        filedetails = await cursor.to_list(length=1)
-        return filedetails
+        results = []
+        
+        # Search in all MongoDB instances
+        for i, model in enumerate(mongo_models):
+            try:
+                cursor = model.find(filter)
+                files = await cursor.to_list(length=1)
+                if files:
+                    print(f"Found file details in DB #{i+1}")
+                    results.extend(files)
+                    # If we found the file, no need to check other DBs
+                    break
+            except Exception as e:
+                print(f"Error getting file details from DB #{i+1}: {e}")
+        
+        return results
 
 def encode_file_id(s: bytes) -> str:
     r = b""
