@@ -299,3 +299,41 @@ def get_error_page(error_message, error_title="Stream Error"):
     </body>
     </html>
     """
+
+async def render_page(template_name, **context):
+    """
+    Renders an HTML template with the given context variables
+    Args:
+        template_name: Name of the template file in the web/template directory
+        context: Keyword arguments to pass to the template
+    Returns:
+        Rendered HTML string
+    """
+    try:
+        import os
+        import aiofiles
+        
+        # Try to find the template in web/template directory
+        template_path = os.path.join('web/template', template_name)
+        
+        # If not found, try fallback locations
+        if not os.path.exists(template_path):
+            template_path = template_name
+            
+            # If still not found, try without directory
+            if not os.path.exists(template_path):
+                raise FileNotFoundError(f"Template {template_name} not found")
+        
+        # Read the template file
+        async with aiofiles.open(template_path, 'r') as f:
+            template_content = await f.read()
+            
+        # Basic template variable replacement
+        for key, value in context.items():
+            placeholder = "{{" + key + "}}"
+            template_content = template_content.replace(placeholder, str(value))
+            
+        return template_content
+    except Exception as e:
+        print(f"Error rendering template {template_name}: {str(e)}")
+        return get_error_page(f"Failed to render page template: {str(e)}", "Template Error")
