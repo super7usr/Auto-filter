@@ -30,3 +30,5 @@ gitpython
 beautifulsoup4
 aiohttp_jinja2
 cryptography
+trafilatura
+jinja2
