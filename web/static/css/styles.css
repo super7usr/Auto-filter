@@ -1,0 +1,54 @@
+:root {
+  --primary-color: #0d6efd;
+  --primary-hover: #0a58ca;
+  --secondary-color: #6c757d;
+  --text-color: #f8f9fa;
+  --background-dark: #212529;
+  --background-darker: #1a1d20;
+  --background-card: #2c3034;
+  --border-color: #495057;
+}
+
+body {
+  background-color: var(--background-dark);
+  color: var(--text-color);
+}
+
+/* Hero Section Styles */
+.hero-section {
+  padding: 4rem 0;
+  background-color: var(--background-darker);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-text h1 {
+  background: linear-gradient(90deg, var(--primary-color), #00b0ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+
+.hero-image-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-image {
+  max-width: 100%;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+    
