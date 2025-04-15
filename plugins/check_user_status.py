@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from info import ADMINS, AUTO_FILTER, BUTTON_LOCK, WELCOME, TEMPLATES
+from info import ADMINS, AUTO_FILTER, BUTTON_LOCK, WELCOME
 from database.users_chats_db import db
 
 logger = logging.getLogger(__name__)
