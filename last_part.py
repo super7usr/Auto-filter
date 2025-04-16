@@ -537,4 +537,359 @@ async def watch_handler(request):
             
         # Use the render_page function which handles hash verification
         from web.utils.render_template import render_page
-        return web.Response(text=await render_page(message_i
+        return web.Response(text=await render_page(message_id, hash_value), content_type='text/html')
+    except Exception as e:
+        logging.error(f"Error in watch_handler: {str(e)}")
+        error_html = f"""
+        <!DOCTYPE html>
+        <html lang="en" data-bs-theme="dark">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Error - Movie Series Bot</title>
+            <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+            <style>
+                :root {{
+                    --primary-gradient: linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b);
+                    --accent-color: #ff5e00;
+                }}
+
+                body {{
+                    min-height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: var(--primary-gradient);
+                    background-size: 400% 400%;
+                    animation: gradient 15s ease infinite;
+                    color: white;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    padding: 20px;
+                }}
+
+                @keyframes gradient {{
+                    0% {{ background-position: 0% 50%; }}
+                    50% {{ background-position: 100% 50%; }}
+                    100% {{ background-position: 0% 50%; }}
+                }}
+
+                .error-container {{
+                    max-width: 500px;
+                    text-align: center;
+                    background: rgba(15, 23, 42, 0.8);
+                    backdrop-filter: blur(10px);
+                    border-radius: 16px;
+                    padding: 40px;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                }}
+
+                .error-icon {{
+                    font-size: 5rem;
+                    color: var(--accent-color);
+                    margin-bottom: 20px;
+                }}
+
+                .error-title {{
+                    font-size: 2rem;
+                    margin-bottom: 20px;
+                }}
+
+                .error-message {{
+                    margin-bottom: 30px;
+                    color: rgba(255, 255, 255, 0.8);
+                }}
+
+                .back-button {{
+                    background: linear-gradient(45deg, #0088cc, #00aaff);
+                    border: none;
+                    color: white;
+                    padding: 12px 25px;
+                    border-radius: 30px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    text-decoration: none;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: all 0.3s ease;
+                }}
+
+                .back-button:hover {{
+                    transform: translateY(-3px);
+                    box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="error-container">
+                <i class="fas fa-exclamation-triangle error-icon"></i>
+                <h1 class="error-title">Oops! Something went wrong</h1>
+                <p class="error-message">We couldn't load the media you requested. The file might have been removed or there could be a temporary issue with our streaming service.</p>
+                <a href="/" class="back-button">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+            </div>
+        </body>
+        </html>
+        """
+        return web.Response(text=error_html, content_type='text/html')
+
+@routes.get("/download/{message_id:\d+}/{file_name}")
+async def download_handler(request):
+    try:
+        message_id = int(request.match_info['message_id'])
+        
+        # Get the hash from query params, required for secure access
+        hash_value = request.query.get('hash')
+        if not hash_value:
+            raise ValueError("Missing hash parameter")
+            
+        # Verify hash before allowing download
+        # Get message for hash verification
+        if not temp.BOT:
+            raise ValueError("Bot service unavailable")
+            
+        media_msg = await temp.BOT.get_messages(BIN_CHANNEL, message_id)
+        if not media_msg:
+            raise ValueError(f"No message found with ID: {message_id}")
+            
+        # Get hash for the message
+        from web.utils.file_properties import get_hash
+        expected_hash = get_hash(media_msg)
+        
+        # Verify hash matches
+        if hash_value != expected_hash:
+            logging.warning(f"Invalid hash: provided {hash_value}, expected {expected_hash}")
+            raise ValueError("Invalid hash for requested file")
+            
+        # Continue with download
+        return await media_download(request, message_id)
+    except Exception as e:
+        logging.error(f"Error in download_handler: {str(e)}")
+        error_html = """
+        <!DOCTYPE html>
+        <html lang="en" data-bs-theme="dark">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Download Error - Movie Series Bot</title>
+            <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+            <style>
+                :root {
+                    --primary-gradient: linear-gradient(45deg, #3a1c71, #d76d77, #ffaf7b);
+                    --accent-color: #ff5e00;
+                }
+
+                body {
+                    min-height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: var(--primary-gradient);
+                    background-size: 400% 400%;
+                    animation: gradient 15s ease infinite;
+                    color: white;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    padding: 20px;
+                }
+
+                @keyframes gradient {
+                    0% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                }
+
+                .error-container {
+                    max-width: 500px;
+                    text-align: center;
+                    background: rgba(15, 23, 42, 0.8);
+                    backdrop-filter: blur(10px);
+                    border-radius: 16px;
+                    padding: 40px;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                }
+
+                .error-icon {
+                    font-size: 5rem;
+                    color: var(--accent-color);
+                    margin-bottom: 20px;
+                }
+
+                .error-title {
+                    font-size: 2rem;
+                    margin-bottom: 20px;
+                }
+
+                .error-message {
+                    margin-bottom: 30px;
+                    color: rgba(255, 255, 255, 0.8);
+                }
+
+                .back-button {
+                    background: linear-gradient(45deg, #0088cc, #00aaff);
+                    border: none;
+                    color: white;
+                    padding: 12px 25px;
+                    border-radius: 30px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    text-decoration: none;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: all 0.3s ease;
+                }
+
+                .back-button:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
+                }
+            </style>
+        </head>
+        <body>
+            <div class="error-container">
+                <i class="fas fa-download error-icon"></i>
+                <h1 class="error-title">Download Failed</h1>
+                <p class="error-message">We couldn't download the media you requested. The file might have been removed or there could be a temporary issue with our download service.</p>
+                <a href="/" class="back-button">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+            </div>
+        </body>
+        </html>
+        """
+        return web.Response(text=error_html, content_type='text/html')
+
+
+async def chunk_size(length):
+    """Calculate chunk size for efficient streaming"""
+    if length > 104857600:  # 100 MB
+        return 1048576  # 1 MB
+    if length > 10485760:  # 10 MB
+        return 524288  # 512 KB
+    return 262144  # 256 KB
+
+async def offset_fix(offset, chunk_size):
+    """Calculate offset for chunks"""
+    offset -= offset % chunk_size
+    return offset
+
+async def media_download(request, message_id: int):
+    try:
+        range_header = request.headers.get('Range', 0)
+        
+        # Safely get the message
+        if not temp.BOT:
+            return web.Response(
+                status=503,
+                text="Bot service unavailable",
+                content_type="text/plain"
+            )
+            
+        try:
+            media_msg = await temp.BOT.get_messages(BIN_CHANNEL, message_id)
+            if not media_msg:
+                return web.Response(
+                    status=404, 
+                    text="File not found", 
+                    content_type="text/plain"
+                )
+        except Exception as e:
+            print(f"Error retrieving message: {str(e)}")
+            return web.Response(
+                status=404, 
+                text="File not found or access denied", 
+                content_type="text/plain"
+            )
+            
+        # Safely get file properties
+        try:
+            file_properties = await TGCustomYield().generate_file_properties(media_msg)
+            if not file_properties:
+                return web.Response(
+                    status=500, 
+                    text="Could not process file properties", 
+                    content_type="text/plain"
+                )
+            file_size = file_properties.file_size
+        except Exception as e:
+            print(f"Error generating file properties: {str(e)}")
+            return web.Response(
+                status=500, 
+                text="Failed to process file", 
+                content_type="text/plain"
+            )
+
+        # Process range headers
+        try:
+            if range_header:
+                from_bytes, until_bytes = range_header.replace('bytes=', '').split('-')
+                from_bytes = int(from_bytes)
+                until_bytes = int(until_bytes) if until_bytes else file_size - 1
+            else:
+                from_bytes = request.http_range.start or 0
+                until_bytes = request.http_range.stop or file_size - 1
+
+            # Validate range
+            if from_bytes < 0 or until_bytes >= file_size or from_bytes > until_bytes:
+                return web.Response(
+                    status=416,  # Range Not Satisfiable
+                    text=f"Invalid range. File size: {file_size}",
+                    content_type="text/plain"
+                )
+                
+            req_length = until_bytes - from_bytes
+        except Exception as e:
+            print(f"Error processing range headers: {str(e)}")
+            from_bytes = 0
+            until_bytes = file_size - 1
+            req_length = until_bytes - from_bytes
+
+        # Process file and prepare response
+        try:
+            new_chunk_size = await chunk_size(req_length)
+            offset = await offset_fix(from_bytes, new_chunk_size)
+            first_part_cut = from_bytes - offset
+            last_part_cut = (until_bytes % new_chunk_size) + 1
+            part_count = math.ceil(req_length / new_chunk_size)
+            body = TGCustomYield().yield_file(media_msg, offset, first_part_cut, last_part_cut, part_count,
+                                          new_chunk_size)
+
+            file_name = file_properties.file_name if file_properties.file_name \
+                else f"{secrets.token_hex(2)}.jpeg"
+            mime_type = file_properties.mime_type if file_properties.mime_type \
+                else f"{mimetypes.guess_type(file_name)}"
+
+            return_resp = web.Response(
+                status=206 if range_header else 200,
+                body=body,
+                headers={
+                    "Content-Type": mime_type,
+                    "Content-Range": f"bytes {from_bytes}-{until_bytes}/{file_size}",
+                    "Content-Disposition": f'attachment; filename="{file_name}"',
+                    "Accept-Ranges": "bytes",
+                }
+            )
+
+            if return_resp.status == 200:
+                return_resp.headers.add("Content-Length", str(file_size))
+
+            return return_resp
+            
+        except Exception as e:
+            print(f"Error preparing file download: {str(e)}")
+            return web.Response(
+                status=500,
+                text="An error occurred while preparing the file download",
+                content_type="text/plain"
+            )
+    except Exception as e:
+        print(f"Unexpected error in media_download: {str(e)}")
+        return web.Response(
+            status=500,
+            text="An unexpected error occurred",
+            content_type="text/plain"
+        )
+
