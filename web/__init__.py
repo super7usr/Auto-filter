@@ -1,5 +1,3 @@
-# Credit - adarsh-goel
-
 import sys
 import logging
 from aiohttp import web
@@ -7,7 +5,6 @@ from web.stream_routes import routes as stream_routes
 from web.utils.session_middleware import setup_session_middleware
 from web.utils.admin_utils import setup_jinja
 
-# Configure logger
 logger = logging.getLogger(__name__)
 
 # Initialize the web application
