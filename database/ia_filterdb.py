@@ -6,7 +6,15 @@ from pyrogram.file_id import FileId
 import os
 import json
 from info import USE_CAPTION_FILTER, DATABASE_URL, SECOND_DATABASE_URL, DATABASE_NAME, COLLECTION_NAME, MAX_BTN
+# Import needed modules
+from umongo import fields as umongo_fields
 
+# Create a custom field class that has a default attribute
+class CustomStrField(umongo_fields.StrField):
+    @property
+    def default(self):
+        return None
+        
 # Enhanced to support multiple MongoDB instances
 MULTI_MONGODB_URLS = os.environ.get('MULTI_MONGODB_URLS', '')
 mongodb_urls = []
@@ -66,7 +74,7 @@ else:
         # Create Media model for this instance
         @instance.register
         class MediaModel(Document):
-            file_id = fields.StrField(attribute='_id', allow_none=True)
+            file_id = CustomStrField(attribute='_id')
             file_name = fields.StrField(required=True)
             file_size = fields.IntField(required=True)
             caption = fields.StrField(allow_none=True)
