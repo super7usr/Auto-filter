@@ -74,7 +74,7 @@ else:
         # Create Media model for this instance
         @instance.register
         class MediaModel(Document):
-            file_id = CustomStrField(attribute='_id')
+            file_id = fields.StrField(attribute='_id')
             file_name = fields.StrField(required=True)
             file_size = fields.IntField(required=True)
             caption = fields.StrField(allow_none=True)
